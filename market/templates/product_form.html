@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Nuevo producto{% endblock %}
+
+{% block content %}
+<div class="product-container">
+  <h2 style="text-align:center; margin-bottom:20px;">Publicar producto</h2>
+  <form method="post" enctype="multipart/form-data" class="product-form">
+    {% csrf_token %}
+    <div class="form-group">
+      {{ form.title.label_tag }}
+      {{ form.title }}
+    </div>
+    <div class="form-group">
+      {{ form.description.label_tag }}
+      {{ form.description }}
+    </div>
+    <div class="form-group">
+      {{ form.marca.label_tag }}
+      {{ form.marca }}
+    </div>
+    <div class="form-group">
+      {{ form.price.label_tag }}
+      {{ form.price }}
+    </div>
+    <div class="form-group">
+      {{ form.image.label_tag }}
+      {{ form.image }}
+    </div>
+
+    <button type="submit" class="btn-submit">Publicar</button>
+  </form>
+</div>
+
+<style>
+.product-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 25px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-family: 'Arial', sans-serif;
+}
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+
+.btn-submit {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.3s;
+}
+
+.btn-submit:hover {
+  background-color: #218838;
+}
+</style>
+{% endblock %}

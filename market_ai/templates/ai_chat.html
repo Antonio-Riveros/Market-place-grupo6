@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="text-align:center; margin-bottom:20px;">Chat asistente del Mercadito (IA)</h2>
+
+<div class="chat-container">
+  <div class="chat-box" id="chatBox">
+    {% if history %}
+      {% for turn in history %}
+        <div class="message user-message">
+          <span class="sender">Tú:</span>
+          <span class="text">{{ turn.user }}</span>
+        </div>
+        <div class="message ai-message">
+          <span class="sender">Asistente:</span>
+          <span class="text">{{ turn.ai }}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="no-messages">El chat empieza vacío. ¡Escribí algo para comenzar!</p>
+    {% endif %}
+  </div>
+
+  <form method="post" class="chat-form">
+    {% csrf_token %}
+    <div class="input-container">
+      <textarea id="chatInput" name="message" rows="1" placeholder="Escribí tu mensaje..." required></textarea>
+      <button type="submit" class="btn-send">Enviar</button>
+      <button type="submit" name="clear_chat" class="btn-clear">Limpiar chat</button>
+    </div>
+  </form>
+
+
+</div>
+
+<style>
+.chat-container {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  font-family: 'Arial', sans-serif;
+}
+
+.chat-box {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 15px;
+  height: 400px;
+  overflow-y: auto;
+  background: #f9f9f9;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  max-width: 80%;
+  padding: 10px 15px;
+  border-radius: 15px;
+  word-wrap: break-word;
+}
+
+.user-message {
+  background: #007bff;
+  color: white;
+  align-self: flex-end;
+}
+
+.ai-message {
+  background: #e2e2e2;
+  color: #333;
+  align-self: flex-start;
+}
+
+.sender {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.input-container {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  position: relative;
+}
+
+textarea#chatInput {
+  flex: 1;
+  padding: 12px 15px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  resize: none;
+  overflow: hidden;
+  transition: all 0.2s;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+textarea#chatInput:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+
+.btn-send {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-send:hover {
+  background-color: #218838;
+}
+
+.no-messages {
+  text-align: center;
+  color: #888;
+  margin-top: 50%;
+  font-style: italic;
+}
+
+.btn-clear {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0 15px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-clear:hover {
+  background-color: #c82333;
+}
+
+
+
+
+
+
+
+
+</style>
+
+<script>
+// Auto-scroll al final del chat
+const chatBox = document.getElementById('chatBox');
+if (chatBox) {
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Auto-expand textarea
+const chatInput = document.getElementById('chatInput');
+chatInput.addEventListener('input', e => {
+  chatInput.style.height = 'auto';
+  chatInput.style.height = chatInput.scrollHeight + 'px';
+});
+</script>
+{% endblock %}

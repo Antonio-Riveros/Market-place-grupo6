@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container">
+  <div class="profile-header">
+    {% if profile.avatar %}
+      <img src="{{ profile.avatar.url }}" alt="Avatar" class="profile-avatar">
+    {% else %}
+      <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=random" 
+           alt="Avatar" class="profile-avatar">
+    {% endif %}
+    <h2 class="username">{{ request.user.username }}</h2>
+  </div>
+
+  <div class="profile-bio">
+    {% if profile.bio %}
+      <p>{{ profile.bio }}</p>
+    {% else %}
+      <p class="text-muted">No has agregado una biografía todavía.</p>
+    {% endif %}
+  </div>
+
+  <div class="profile-actions">
+    <a href="{% url 'edit_profile' %}" class="btn-edit">Editar perfil</a>
+  </div>
+</div>
+
+<style>
+.profile-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 25px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #007bff;
+}
+
+.username {
+  font-size: 1.8rem;
+  color: #333;
+  margin: 0;
+}
+
+.profile-bio p {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.profile-actions {
+  margin-top: 25px;
+}
+
+.btn-edit {
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  padding: 10px 25px;
+  border-radius: 25px;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+
+.btn-edit:hover {
+  background-color: #0056b3;
+}
+</style>
+{% endblock %}

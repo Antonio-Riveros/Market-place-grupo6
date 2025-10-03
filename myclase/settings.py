@@ -120,7 +120,24 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+# Configuración de proveedores de social login
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": "356985042666-lu036fvm6n3lo149gpdhdlpkrqpso9rd.apps.googleusercontent.com",      # si preferís cargar desde settings en vez de admin
+            "secret": "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",
+        },
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+    },
+    "github": {
+        "APP": {
+            "client_id": "Ov23li3YqnWNP0Icqbuv",
+            "secret": "0878a2e5ecab7b808fb9a7b1fc00b4874f5dc451",
+        },
+        "SCOPE": ["user:email"],
+    },
+}
 
 
 

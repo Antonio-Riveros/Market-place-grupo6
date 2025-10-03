@@ -11,7 +11,7 @@ urlpatterns = [
     path("market/", include("market.urls")),  # users
     path("profiles/", include("perfil.urls")),  # profiles
     path("ai/", include("market_ai.urls")),  # AI
-    
+    path('', include('core.urls')),
 # ============Semana7=================================   
     path("", include("presence.urls")), #sesion activa
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

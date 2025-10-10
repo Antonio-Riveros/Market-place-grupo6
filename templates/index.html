@@ -1,0 +1,17 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 mb-4">Encuentra el lugar perfecto al cual llamar hogar</h1>
+    <p class="lead mb-4">
+        Somos un espacio que conecta dueños con inquilinos.
+        Desde CasaMia entendemos el desafío que es alquilar,
+        por eso priorizamos la sencillez ahorrándote tiempo.
+        ¿Qué dices? ¿Buscamos tu nuevo hogar?
+    </p>
+    <a href="{% url 'buscar' %}" class="btn btn-primary btn-lg">Buscar mi nuevo hogar</a>
+</div>
+{% endblock %}

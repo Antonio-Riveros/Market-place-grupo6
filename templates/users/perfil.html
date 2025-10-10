@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Mi Perfil</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="{% static 'img/user-avatar.png' %}" alt="Avatar" class="rounded-circle" width="120" height="120">
+                    </div>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item"><strong>Usuario:</strong> {{ user.username }}</li>
+                        <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+                        <li class="list-group-item"><strong>Nombre completo:</strong> {{ user.get_full_name }}</li>
+                    </ul>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'usuarios:editar_perfil' %}" class="btn btn-outline-primary">Editar Perfil</a>
+                        <a href="{% url 'logout' %}" class="btn btn-outline-danger">Cerrar sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

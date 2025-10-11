@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load widget_tweaks %}
+{% load socialaccount %}
 
 {% block title %}Iniciar Sesión{% endblock %}
 
@@ -28,10 +29,10 @@
     <form method="POST" novalidate>
       {% csrf_token %}
 
-      <!-- Usuario -->
+      <!-- Usuario o Email -->
       <div class="mb-3">
-        <label for="id_username" class="form-label fw-semibold">Usuario</label>
-        <input type="text" name="username" class="form-control rounded-3" id="id_username" placeholder="Ingresa tu usuario" required>
+        <label for="id_login" class="form-label fw-semibold">Usuario o Email</label>
+        <input type="text" name="login" class="form-control rounded-3" id="id_login" placeholder="Ingresa tu usuario o email" required>
       </div>
 
       <!-- Contraseña -->
@@ -43,9 +44,22 @@
       <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">Iniciar Sesión</button>
     </form>
 
+    <!-- Login con Google -->
+    <div class="text-center my-3">
+      <p class="fw-semibold">O inicia sesión con:</p>
+      <a href="{% provider_login_url 'google' %}" class="btn btn-outline-danger w-100 py-2 mb-2">
+        <i class="bi bi-google me-2"></i> Google
+      </a>
+    </div>
+
+    <!-- Registro y seguir sin login -->
     <div class="text-center mt-3">
-      <p class="mb-0">¿No tienes cuenta? <a href="{% url 'register' %}" class="text-decoration-none fw-semibold text-accent">Registrate aquí</a></p>
-      <p class="mb-0">O <a href="{% url 'index' %}" class="text-decoration-none fw-semibold text-accent">seguir sin iniciar sesión</a></p>
+      <p class="mb-0">¿No tienes cuenta? 
+        <a href="{% url 'register' %}" class="text-decoration-none fw-semibold text-accent">Regístrate aquí</a>
+      </p>
+      <p class="mb-0">
+        O <a href="{% url 'index' %}" class="text-decoration-none fw-semibold text-accent">seguir sin iniciar sesión</a>
+      </p>
     </div>
   </div>
 </div>

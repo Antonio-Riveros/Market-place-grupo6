@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nosotros{% endblock %}
+
+{% block content %}
+<div class="py-5">
+  <div class="container">
+
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+      <h1 class="fw-bold display-5 text-primary">Sobre CasaMía</h1>
+      <p class="lead mx-auto" style="max-width: 750px;">
+        En CasaMía creemos que encontrar tu lugar ideal no debería ser complicado.
+        Creamos una plataforma moderna, transparente y confiable para conectar personas con su próximo hogar.
+      </p>
+    </div>
+
+    <!-- Misión / Visión / Valores -->
+    <div class="row text-center g-4">
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4">
+          <div class="card-body p-4">
+            <div class="mb-3 text-primary">
+              <i class="bi bi-bullseye display-5"></i>
+            </div>
+            <h4 class="fw-bold mb-3">Misión</h4>
+            <p class="card-text">
+              Ofrecer soluciones inmobiliarias simples y seguras, brindando confianza y acompañamiento en cada paso del proceso.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4">
+          <div class="card-body p-4">
+            <div class="mb-3 text-primary">
+              <i class="bi bi-eye display-5"></i>
+            </div>
+            <h4 class="fw-bold mb-3">Visión</h4>
+            <p class="card-text">
+              Ser la plataforma líder en gestión inmobiliaria digital, impulsando la innovación y el acceso a oportunidades habitacionales.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 rounded-4">
+          <div class="card-body p-4">
+            <div class="mb-3 text-primary">
+              <i class="bi bi-heart display-5"></i>
+            </div>
+            <h4 class="fw-bold mb-3">Valores</h4>
+            <p class="card-text">
+              Compromiso, confianza, innovación y cercanía. En CasaMía trabajamos con empatía para conectar personas con su futuro hogar.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA final -->
+    <div class="text-center mt-5">
+      <h4 class="fw-semibold mb-3">¿Buscás tu próxima propiedad?</h4>
+      <a href="{% url 'index' %}" class="btn btn-lg btn-primary rounded-4 px-4 shadow-sm">
+        Explorar Propiedades
+        <i class="bi bi-arrow-right-circle ms-2"></i>
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

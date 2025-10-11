@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from .models import Profile
 
 class UserRegisterForm(forms.ModelForm):
     password = forms.CharField(
@@ -35,3 +36,27 @@ class UserRegisterForm(forms.ModelForm):
         if User.objects.filter(email=email).exists():
             raise ValidationError("Este correo ya está registrado")
         return email
+
+
+class EditarPerfilForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo electrónico'}),
+        }
+
+
+class PerfilForm(forms.ModelForm):
+    """Formulario para manejar el avatar del usuario"""
+    avatar = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        label=''  # Sin texto para evitar "Currently..."
+    )
+
+    class Meta:
+        model = Profile
+        fields = ['avatar']

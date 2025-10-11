@@ -1,19 +1,99 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Editar Perfil{% endblock %}
 
 {% block content %}
-  <h2>Editar Perfil</h2>
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
 
-  {% if messages %}
-    {% for message in messages %}
-      <p style="color: green;">{{ message }}</p>
-    {% endfor %}
-  {% endif %}
+        <!-- Header -->
+        <div class="card-header bg-gradient bg-primary text-white text-center py-4">
+          <h3 class="fw-bold mb-0">Editar Perfil</h3>
+        </div>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar cambios</button>
-  </form>
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-  <a href="{% url 'home' %}">Volver al inicio</a>
+            <!-- Avatar actual -->
+            <div class="d-flex justify-content-center mb-3">
+              <div class="text-center">
+                <img src="{{ request.user.profile.avatar.url }}" 
+                     alt="Avatar" 
+                     class="rounded-circle border border-2 border-primary mb-2"
+                     width="120" height="120">
+                <div class="small text-muted">Avatar actual</div>
+              </div>
+            </div>
+
+            <!-- Input para cambiar avatar -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Cambiar avatar</label>
+              {{ perfil_form.avatar|add_class:"form-control" }}
+              {% if perfil_form.avatar.errors %}
+                <div class="text-danger small mt-1">{{ perfil_form.avatar.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Botón eliminar avatar -->
+            <div class="mb-4">
+              <button type="submit" name="eliminar_avatar" value="1" class="btn btn-outline-danger w-100">
+                <i class="bi bi-x-circle me-1"></i> Eliminar foto
+              </button>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Campos de User -->
+            <div class="mb-3">
+              <label for="id_first_name" class="form-label fw-semibold">Nombre</label>
+              {{ user_form.first_name|add_class:"form-control" }}
+              {% if user_form.first_name.errors %}
+                <div class="text-danger small mt-1">{{ user_form.first_name.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="id_last_name" class="form-label fw-semibold">Apellido</label>
+              {{ user_form.last_name|add_class:"form-control" }}
+              {% if user_form.last_name.errors %}
+                <div class="text-danger small mt-1">{{ user_form.last_name.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="id_email" class="form-label fw-semibold">Correo electrónico</label>
+              {{ user_form.email|add_class:"form-control" }}
+              {% if user_form.email.errors %}
+                <div class="text-danger small mt-1">{{ user_form.email.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Cambiar contraseña -->
+            <div class="text-center mb-4">
+              <a href="{% url 'usuarios:password_change' %}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-key me-1"></i> Cambiar contraseña
+              </a>
+            </div>
+
+            <!-- Botones guardar/cancelar -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <a href="{% url 'usuarios:perfil' %}" class="btn btn-outline-secondary px-4">
+                <i class="bi bi-arrow-left-circle me-1"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-save2 me-1"></i> Guardar Cambios
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

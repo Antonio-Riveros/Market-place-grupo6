@@ -1,0 +1,202 @@
+/* =========================
+   VARIABLES GLOBALES
+========================= */
+:root {
+  --violeta-suave: #b388ff;
+  --violeta-intenso: #9c6bff;
+  --fondo-claro: #f8f9fa;
+  --fondo-oscuro: #121212;
+  --texto-claro: #212529;
+  --texto-oscuro: #f8f9fa;
+  --login-bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-color: #212529;
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.2);
+}
+
+/* =========================
+   BODY
+========================= */
+body {
+  background-color: var(--fondo-claro);
+  color: var(--texto-claro);
+  transition: all 0.4s ease;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+.navbar {
+  transition: background-color 0.4s ease;
+}
+
+.navbar-dark .nav-link,
+.navbar-dark .navbar-brand {
+  color: var(--violeta-suave) !important;
+}
+
+.navbar-light .nav-link,
+.navbar-light .navbar-brand {
+  color: var(--texto-claro) !important;
+}
+
+/* =========================
+   FOOTER
+========================= */
+footer {
+  background-color: var(--fondo-claro);
+  color: var(--texto-claro);
+  padding: 3rem 0;
+  transition: all 0.4s ease;
+}
+
+footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--violeta-intenso);
+}
+
+/* =========================
+   INPUTS, TEXTAREAS Y SELECT
+========================= */
+input.form-control,
+textarea.form-control,
+select.form-control {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+input.form-control:focus,
+textarea.form-control:focus,
+select.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(156, 107, 255, 0.25);
+  border-color: var(--violeta-intenso);
+  outline: none;
+}
+
+input.form-control::placeholder,
+textarea.form-control::placeholder,
+select.form-control::placeholder {
+  color: #6c757d;
+}
+
+/* =========================
+   DARK MODE
+========================= */
+body.dark-mode {
+  background-color: var(--fondo-oscuro);
+  color: var(--texto-oscuro);
+}
+
+/* Navbar */
+body.dark-mode .navbar {
+  background-color: #1c1c1c !important;
+}
+
+body.dark-mode .navbar .nav-link,
+body.dark-mode .navbar .navbar-brand {
+  color: var(--violeta-suave) !important;
+}
+
+/* Dropdowns */
+body.dark-mode .dropdown-menu {
+  background-color: #1e1e1e;
+  color: var(--texto-oscuro);
+}
+
+body.dark-mode .dropdown-item {
+  color: var(--texto-oscuro);
+}
+
+body.dark-mode .dropdown-item:hover {
+  background-color: var(--violeta-intenso);
+  color: white;
+}
+
+/* Footer */
+body.dark-mode footer {
+  background-color: #1e1e1e;
+  color: var(--texto-oscuro);
+}
+
+/* Cards y listas */
+body.dark-mode .card,
+body.dark-mode .list-group-item {
+  background-color: #1c1c1c;
+  color: var(--texto-oscuro);
+  border: 1px solid #2e2e2e;
+}
+
+/* Botones */
+body.dark-mode .btn-primary {
+  background-color: var(--violeta-intenso);
+  border-color: var(--violeta-intenso);
+  color: #121212;
+}
+
+body.dark-mode .btn-primary:hover {
+  background-color: #c7a6ff;
+  border-color: #c7a6ff;
+}
+
+body.dark-mode .btn-outline-primary {
+  border-color: var(--violeta-suave);
+  color: var(--violeta-suave);
+}
+
+body.dark-mode .btn-outline-primary:hover {
+  background-color: var(--violeta-intenso);
+  color: white;
+}
+
+/* Links */
+body.dark-mode a {
+  color: var(--violeta-suave);
+}
+
+body.dark-mode a:hover {
+  color: #c7a6ff;
+}
+
+/* Botón de cambio de modo */
+#modoToggle {
+  border: none;
+  background: none;
+  color: var(--texto-claro);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+body.dark-mode #modoToggle {
+  color: var(--violeta-suave);
+}
+
+/* Inputs en modo oscuro */
+body.dark-mode input.form-control,
+body.dark-mode textarea.form-control,
+body.dark-mode select.form-control {
+  background-color: #2f2d3b;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #e3e3e3;
+}
+
+body.dark-mode input.form-control:focus,
+body.dark-mode textarea.form-control:focus,
+body.dark-mode select.form-control:focus {
+  background-color: #353535;
+  border-color: #c7a6ff;
+  box-shadow: 0 0 0 0.25rem rgba(199, 166, 255, 0.25);
+  color: #fff;
+}
+
+body.dark-mode input.form-control::placeholder,
+body.dark-mode textarea.form-control::placeholder,
+body.dark-mode select.form-control::placeholder {
+  color: #b5b5b5;
+}

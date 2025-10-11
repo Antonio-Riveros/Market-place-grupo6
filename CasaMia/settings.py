@@ -50,7 +50,8 @@ APPS_TERCEROS = [
 APPS_PROPIAS = [
     'apps.propiedades',
     'apps.comparador',
-    'apps.buscador'
+    'apps.buscador',
+    'users',
 ]
 
 
@@ -133,6 +134,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # si tenés una carpeta global 'static' en la raíz del proyecto
+]
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

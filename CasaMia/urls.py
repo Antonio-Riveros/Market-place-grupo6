@@ -33,7 +33,7 @@ urlpatterns = [
     path('comparar/', include('apps.comparador.urls')),
     path('', index, name='index'),
     
-    
+     path('', include('core.urls')),
     path('usuarios/', include('users.urls')),
     path('register/', users_views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(

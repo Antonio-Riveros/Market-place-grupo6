@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis propiedades{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Mis propiedades publicadas</h2>
+    <a href="{% url 'crear_propiedad' %}" class="btn btn-success">
+      <i class="bi bi-plus-circle"></i> Publicar nueva
+    </a>
+  </div>
+
+  {% if propiedades %}
+    <div class="row g-4">
+      {% for prop in propiedades %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm hover-shadow">
+            <!-- Imagen principal -->
+            {% if prop.imagenes.first %}
+              <img src="{{ prop.imagenes.first.imagen.url }}" class="card-img-top" alt="{{ prop.titulo }}" style="max-height: 200px; object-fit: cover;">
+            {% else %}
+              <img src="{% static 'fotos/default-property.jpg' %}" class="card-img-top" alt="Sin imagen" style="max-height: 200px; object-fit: cover;">
+            {% endif %}
+
+            <!-- Contenido -->
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ prop.titulo }}</h5>
+              <p class="text-muted mb-1"><i class="bi bi-geo-alt"></i> {{ prop.ubicacion }}</p>
+              <h6 class="fw-bold mb-2">{{ prop.precio|floatformat:0 }} ARS</h6>
+
+              <div class="mb-2">
+                <span class="me-2"><i class="bi bi-house-door"></i> {{ prop.habitaciones }} hab.</span>
+                <span class="me-2"><i class="bi bi-bucket"></i> {{ prop.banos }} baños</span>
+                <span><i class="bi bi-aspect-ratio"></i> {{ prop.metros_cuadrados }} m²</span>
+              </div>
+
+              <div class="mt-auto d-flex flex-column gap-2">
+                <a href="{% url 'detalle_propiedad' prop.pk %}" class="btn btn-primary btn-sm w-100">Ver detalles</a>
+                <a href="{% url 'editar_propiedad' prop.pk %}" class="btn btn-outline-primary btn-sm w-100">Editar</a>
+                <a href="{% url 'borrar_propiedad' prop.pk %}" class="btn btn-outline-danger btn-sm w-100">Eliminar</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No tenés propiedades publicadas todavía.</p>
+    <a href="{% url 'crear_propiedad' %}" class="btn btn-success mt-3">Publicar una propiedad</a>
+  {% endif %}
+</div>
+
+<style>
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+</style>
+{% endblock %}

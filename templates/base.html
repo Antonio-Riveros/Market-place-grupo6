@@ -47,7 +47,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow">
               <li><a class="dropdown-item" href="{% url 'usuarios:perfil' %}">Mi perfil</a></li>
-              <li><a class="dropdown-item" href="{% url 'usuarios:editar_perfil' %}">Configuración</a></li>
+              <li><a class="dropdown-item" href="{% url 'configuracion' %}">Configuración</a></li>
               <li><hr class="dropdown-divider"></li>
               <li>
                 <form method="post" action="{% url 'logout' %}">
@@ -90,7 +90,7 @@
           <ul class="list-unstyled">
             <li><a href="{% url 'index' %}">Inicio</a></li>
             <li><a href="{% url 'core:nosotros' %}">Nosotros</a></li>
-            <li><a href="#">Propiedades</a></li>
+            <li><a href="{% url 'listar_propiedades' %}">Propiedades</a></li>
             <li><a href="#">Contacto</a></li>
           </ul>
         </div>

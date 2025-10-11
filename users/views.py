@@ -7,6 +7,9 @@ from django.urls import reverse_lazy
 from django.contrib.auth.views import PasswordChangeView
 from .forms import UserRegisterForm, EditarPerfilForm, PerfilForm
 from .models import Profile
+from django.contrib.auth import authenticate
+
+
 
 # Registro de usuarios
 def register(request):
@@ -96,3 +99,52 @@ class CambiarPasswordView(PasswordChangeView):
         update_session_auth_hash(self.request, form.user)
         messages.success(self.request, "Tu contraseña fue actualizada correctamente")
         return response
+
+
+
+@login_required
+def eliminar_cuenta(request):
+    return render(request, 'users/eliminar_cuenta.html')
+
+@login_required
+def eliminar_cuenta_confirmar(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        user = request.user
+        if authenticate(username=user.username, password=password):
+            # Programar eliminación en 15 días
+            from datetime import timedelta
+            import datetime
+            user.profile.eliminacion_programada = datetime.datetime.now() + timedelta(days=15)
+            user.profile.save()
+            messages.warning(request, 'Se ha programado la eliminación de tu cuenta en 15 días.')
+            return redirect('configuracion')
+        else:
+            return render(request, 'users/eliminar_cuenta.html', {'mensaje': 'Contraseña incorrecta'})
+    return redirect('configuracion')
+
+@login_required
+def cancelar_eliminacion(request):
+    user = request.user
+    if user.profile.eliminacion_programada:
+        user.profile.eliminacion_programada = None
+        user.profile.save()
+        messages.success(request, 'Se ha cancelado la eliminación de tu cuenta.')
+    return redirect('configuracion')
+
+
+
+
+@login_required
+def eliminar_ahora(request):
+    user = request.user
+    # Eliminamos todos los datos relacionados si los tenés, ejemplo propiedades
+    user.propiedades.all().delete()  # elimina todas las propiedades del usuario
+    # Eliminamos el perfil si tenés uno
+    if hasattr(user, 'profile'):
+        user.profile.delete()
+    # Finalmente eliminamos al usuario
+    user.delete()
+    logout(request)
+    messages.success(request, 'Tu cuenta y todos tus datos han sido eliminados permanentemente.')
+    return redirect('index')

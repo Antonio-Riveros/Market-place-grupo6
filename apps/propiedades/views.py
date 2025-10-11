@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import PropiedadForm, ImagenFormSet
 from .models import Propiedad
+from django.utils import timezone
+from datetime import timedelta
 
 # Crear propiedad
 @login_required
@@ -79,3 +81,20 @@ def listar_propiedades(request):
 def detalle_propiedad(request, pk):
     propiedad = get_object_or_404(Propiedad, pk=pk)
     return render(request, 'propiedades/detalle_propiedad.html', {'propiedad': propiedad})
+
+
+
+@login_required
+def mis_propiedades(request):
+    propiedades = Propiedad.objects.filter(publicada_por=request.user)
+    return render(request, 'propiedades/mis_propiedades.html', {'propiedades': propiedades})
+
+
+@login_required
+def configuracion(request):
+    tiene_propiedades = Propiedad.objects.filter(publicada_por=request.user).exists()
+    return render(request, 'configuracion.html', {'tiene_propiedades': tiene_propiedades})
+
+
+
+

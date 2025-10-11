@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Configuración{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4 text-center">Configuración de tu cuenta</h2>
+  <div class="row g-4">
+
+    <!-- Sección Cuenta -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm hover-shadow p-4 text-center h-100">
+        <h5 class="card-title">Cuenta</h5>
+        <p><strong>Usuario:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+
+        <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100 mb-3">Cerrar sesión</a>
+
+        {% if user.profile.eliminacion_programada %}
+          <p class="text-warning">
+            Tu cuenta se eliminará definitivamente el {{ user.profile.eliminacion_programada|date:"d/m/Y" }}.
+          </p>
+          <div class="d-grid gap-2">
+            <form method="post" action="{% url 'usuarios:cancelar_eliminacion' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-warning w-100 mb-2">Cancelar eliminación</button>
+            </form>
+            <form method="post" action="{% url 'usuarios:eliminar_ahora' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger w-100">Eliminar ahora</button>
+            </form>
+          </div>
+        {% else %}
+          <a href="{% url 'usuarios:eliminar_cuenta' %}" class="btn btn-danger w-100 mt-2">
+            <i class="bi bi-trash me-1"></i> Eliminar cuenta
+          </a>
+          <p class="mt-2 text-muted small">La cuenta se eliminará en 15 días junto con todos tus datos.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sección Mis propiedades -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm hover-shadow p-4 h-100 text-center">
+        <h5 class="card-title">Mis propiedades</h5>
+        {% if tiene_propiedades %}
+          <p>Tenés propiedades activas publicadas.</p>
+          <a href="{% url 'mis_propiedades' %}" class="btn btn-primary mb-2 w-100">Ver mis propiedades</a>
+          <a href="{% url 'crear_propiedad' %}" class="btn btn-success w-100">Publicar nueva propiedad</a>
+        {% else %}
+          <p>No tenés propiedades publicadas todavía.</p>
+          <a href="{% url 'crear_propiedad' %}" class="btn btn-success w-100">Publicar una propiedad</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sección Preferencias -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm hover-shadow p-4 h-100 text-center">
+        <h5 class="card-title">Preferencias</h5>
+        <a href="#" class="btn btn-outline-primary w-100 mb-2">Idioma / Región</a>
+        <a href="#" class="btn btn-outline-primary w-100">Formato de moneda</a>
+      </div>
+    </div>
+
+    <!-- Sección Notificaciones -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm hover-shadow p-4 h-100 text-center">
+        <h5 class="card-title">Notificaciones</h5>
+        <a href="#" class="btn btn-outline-primary w-100 mb-2">Email</a>
+        <a href="#" class="btn btn-outline-primary w-100">WhatsApp</a>
+      </div>
+    </div>
+
+    <!-- Sección Seguridad -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm hover-shadow p-4 h-100 text-center">
+        <h5 class="card-title">Seguridad</h5>
+        <a href="#" class="btn btn-outline-warning w-100">Cambiar contraseña</a>
+      </div>
+    </div>
+
+    <!-- Sección Ayuda -->
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm hover-shadow p-4 h-100 text-center">
+        <h5 class="card-title">Ayuda & Soporte</h5>
+        <a href="#" class="btn btn-outline-info w-100">Contacto / FAQ</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+.card h5 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+.card p {
+  margin-bottom: 1rem;
+  color: #555;
+}
+.card a.btn {
+  font-weight: 500;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filtros %}
+
+{% block title %}{{ propiedad.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Botón para regresar al listado -->
+  <div class="mb-4">
+    <a href="{% url 'listar_propiedades' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Volver al listado
+    </a>
+  </div>
+
+  <div class="row">
+    <!-- Carrusel de imágenes en el detalle -->
+    <div class="col-md-8">
+      <div id="carouselPropiedad" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% if propiedad.imagenes.all %}
+            {% for img in propiedad.imagenes.all %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <img src="{{ img.imagen.url }}" 
+                     class="d-block w-100 rounded shadow-sm"
+                     alt="Imagen de {{ propiedad.titulo }}"
+                     style="max-height: 500px; object-fit: cover; cursor: pointer;"
+                     data-bs-toggle="modal"
+                     data-bs-target="#modalCarousel"
+                     data-slide-index="{{ forloop.counter0 }}">
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="carousel-item active">
+              <img src="{% static 'img/no-image.jpg' %}" 
+                   class="d-block w-100 rounded"
+                   style="max-height: 500px; object-fit: cover; cursor: pointer;"
+                   data-bs-toggle="modal"
+                   data-bs-target="#modalCarousel"
+                   data-slide-index="0">
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Controles -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselPropiedad" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselPropiedad" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal con carousel completo -->
+    <div class="modal fade" id="modalCarousel" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+          <div class="modal-body p-0 d-flex justify-content-center align-items-center" style="max-height: 80vh;">
+            <div id="carouselModal" class="carousel slide w-100" data-bs-ride="carousel">
+              <div class="carousel-inner">
+                {% for img in propiedad.imagenes.all %}
+                  <div class="carousel-item {% if forloop.first %}active{% endif %}" style="text-align: center;">
+                    <img src="{{ img.imagen.url }}" 
+                         class="d-block mx-auto" 
+                         alt="Imagen ampliada"
+                         style="max-height: 75vh; width: auto; object-fit: contain;">
+                  </div>
+                {% endfor %}
+              </div>
+              <!-- Controles -->
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselModal" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselModal" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles y contacto -->
+    <div class="col-md-4">
+      <h2 class="fw-bold">{{ propiedad.titulo }}</h2>
+      <p class="text-muted"><i class="bi bi-geo-alt"></i> {{ propiedad.ubicacion }}</p>
+      <h3 class="text-primary fw-bold mb-3">{{ propiedad.precio|floatformat:0 }} ARS</h3>
+
+      <div class="mb-3">
+        <span class="me-3"><i class="bi bi-house-door"></i> {{ propiedad.habitaciones }} hab.</span>
+        <span class="me-3"><i class="bi bi-bucket"></i> {{ propiedad.banos }} baños</span>
+        <span><i class="bi bi-aspect-ratio"></i> {{ propiedad.metros_cuadrados }} m²</span>
+      </div>
+
+      <hr>
+
+      <h5>Descripción</h5>
+      <p>{{ propiedad.descripcion }}</p>
+
+      <hr>
+
+      <h5>Publicado por</h5>
+      <p>{{ propiedad.publicada_por.get_full_name|default:propiedad.publicada_por.username }}</p>
+
+      <!-- Botones de contacto -->
+      {% if propiedad.telefono_contacto %}
+        <a href="https://wa.me/{{ propiedad.telefono_contacto|solo_numeros }}"
+           target="_blank"
+           class="btn btn-success w-100 mt-3 mb-2">
+          <i class="bi bi-whatsapp"></i> Contactar por WhatsApp
+        </a>
+      {% endif %}
+
+      {% if propiedad.publicada_por.email %}
+        <a href="mailto:{{ propiedad.publicada_por.email }}"
+           class="btn btn-primary w-100 mb-2">
+          <i class="bi bi-envelope"></i> Enviar correo
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Detalles adicionales -->
+  <div class="row mt-5">
+    <div class="col">
+      <h5>Detalles adicionales</h5>
+      <ul class="list-unstyled">
+        <li><strong>Publicado:</strong> {{ propiedad.fecha_publicacion|date:"d/m/Y" }}</li>
+        <li><strong>Ubicación:</strong> {{ propiedad.ubicacion }}</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Script para abrir el modal en la imagen clickeada -->
+<script>
+  var modalCarousel = document.getElementById('modalCarousel')
+  var modalBootstrap = new bootstrap.Modal(modalCarousel)
+
+  document.querySelectorAll('#carouselPropiedad img').forEach(function(img){
+    img.addEventListener('click', function(){
+      var index = parseInt(img.getAttribute('data-slide-index'))
+      var carousel = new bootstrap.Carousel(modalCarousel.querySelector('.carousel'))
+      carousel.to(index)
+      modalBootstrap.show()
+    })
+  })
+</script>
+
+{% endblock %}

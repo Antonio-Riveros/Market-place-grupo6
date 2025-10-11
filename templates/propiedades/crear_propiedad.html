@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Propiedad{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">{% if form.instance.pk %}Editar{% else %}Crear{% endif %} Propiedad</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h4>Imágenes (mínimo igual a la cantidad de habitaciones)</h4>
+        {{ formset.management_form }}
+        {% for form in formset %}
+            <div class="mb-2">
+                {{ form.imagen.label_tag }} {{ form.imagen }}
+                {% if form.DELETE %}
+                    {{ form.DELETE }} Eliminar
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary mt-3">{% if form.instance.pk %}Actualizar{% else %}Crear{% endif %}</button>
+    </form>
+</div>
+{% endblock %}

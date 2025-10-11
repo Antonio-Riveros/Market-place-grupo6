@@ -200,3 +200,21 @@ body.dark-mode textarea.form-control::placeholder,
 body.dark-mode select.form-control::placeholder {
   color: #b5b5b5;
 }
+
+/* =========================
+   INDEX HERO
+========================= */
+
+.index-hero {
+    background-color: var(--login-bg);
+    transition: all 0.4s ease;
+    padding: 5rem 1rem;
+    text-align: center;
+    min-height: 100vh;
+    color: var(--texto-claro); /* asegurar que el texto se vea en modo claro */
+}
+
+body.dark-mode .index-hero {
+    background-color: var(--fondo-oscuro); /* usar fondo oscuro */
+    color: var(--texto-oscuro); /* texto claro sobre fondo oscuro */
+}

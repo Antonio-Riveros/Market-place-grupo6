@@ -2,7 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('agregar/', views.agregar_propiedad, name='agregar_propiedad'),  # Agregar propiedad
-    path('<int:id>/', views.detalle_propiedad, name='detalle_propiedad'),  # Ver detalle
-    path('<int:id>/eliminar/', views.eliminar_propiedad, name='eliminar_propiedad'),  # Eliminar propiedad
+    path('crear/', views.crear_propiedad, name='crear_propiedad'),
+    path('editar/<int:pk>/', views.editar_propiedad, name='editar_propiedad'),
+    path('borrar/<int:pk>/', views.borrar_propiedad, name='borrar_propiedad'),
+    path('', views.listar_propiedades, name='listar_propiedades'),
+    path('detalle/<int:pk>/', views.detalle_propiedad, name='detalle_propiedad'),
 ]

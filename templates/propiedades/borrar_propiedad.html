@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Borrar Propiedad{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">¿Seguro quieres borrar "{{ propiedad.titulo }}"?</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, borrar</button>
+        <a href="{% url 'index' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

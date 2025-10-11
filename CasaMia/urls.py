@@ -28,11 +28,10 @@ def index(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('propiedades/', include('apps.propiedades.urls')),
     path('buscar/', include('apps.buscador.urls')),
     path('comparar/', include('apps.comparador.urls')),
     path('', index, name='index'),
-    
+    path('propiedades/', include('apps.propiedades.urls')),
      path('', include('core.urls')),
     path('usuarios/', include('users.urls')),
     path('register/', users_views.register, name='register'),

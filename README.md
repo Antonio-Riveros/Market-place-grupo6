@@ -13,7 +13,7 @@
 ## 👥 Integrantes
 
 - [Antonio Riveros](https://github.com/Antonio-Riveros) (Líder de proyecto, configuración de MySQL para desarrollo)
-- [Tania Magali Zarza](https://github.com/MaguiZarza) (Desarrolladora Front-End)
+- [Tania Zarza](https://github.com/MaguiZarza) (Desarrolladora Front-End)
 - [Agustín Silva](https://github.com/agussilva88) (Desarrollador Back-End)
 
 ---

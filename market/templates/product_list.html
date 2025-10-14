@@ -10,6 +10,26 @@
   </p>
 {% endif %}
 
+<!-- FILTROS -->
+<form method="get" style="text-align:center; margin-bottom:20px;">
+  <label for="category">Categoría:</label>
+  <select name="category" id="category">
+    <option value="">Todas</option>
+    {% for cat in categories %}
+      <option value="{{ cat }}" {% if request.GET.category == cat %}selected{% endif %}>{{ cat|capfirst }}</option>
+    {% endfor %}
+  </select>
+
+  <label for="order">Ordenar por precio:</label>
+  <select name="order" id="order">
+    <option value="">Sin ordenar</option>
+    <option value="asc" {% if request.GET.order == "asc" %}selected{% endif %}>Menor a Mayor</option>
+    <option value="desc" {% if request.GET.order == "desc" %}selected{% endif %}>Mayor a Menor</option>
+  </select>
+
+  <button type="submit" class="btn-primary">Filtrar</button>
+</form>
+
 <div class="card-grid">
   {% for product in products %}
     <div class="card">
@@ -31,6 +51,7 @@
   {% endfor %}
 </div>
 
+<!-- CSS del template (igual que antes) -->
 <style>
 .card-grid {
   display: grid;

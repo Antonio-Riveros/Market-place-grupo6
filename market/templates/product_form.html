@@ -6,25 +6,45 @@
   <h2 style="text-align:center; margin-bottom:20px;">Publicar producto</h2>
   <form method="post" enctype="multipart/form-data" class="product-form">
     {% csrf_token %}
+
     <div class="form-group">
       {{ form.title.label_tag }}
       {{ form.title }}
     </div>
+
     <div class="form-group">
       {{ form.description.label_tag }}
       {{ form.description }}
     </div>
+
     <div class="form-group">
       {{ form.marca.label_tag }}
       {{ form.marca }}
     </div>
+
+    <div class="form-group">
+      {{ form.category.label_tag }}
+      {{ form.category }}
+    </div>
+
     <div class="form-group">
       {{ form.price.label_tag }}
       {{ form.price }}
     </div>
+
+    <div class="form-group">
+      {{ form.stock.label_tag }}
+      {{ form.stock }}
+    </div>
+
     <div class="form-group">
       {{ form.image.label_tag }}
       {{ form.image }}
+    </div>
+
+    <div class="form-group">
+      {{ form.active.label_tag }}
+      {{ form.active }}
     </div>
 
     <button type="submit" class="btn-submit">Publicar</button>

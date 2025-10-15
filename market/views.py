@@ -9,8 +9,35 @@ from .forms import ProductForm
 
 
 def product_list(request):
-    products = Product.objects.filter(active=True).order_by("-created_at")
-    return render(request, "product_list.html", {"products": products})
+    products = Product.objects.filter(active=True)
+
+    # Obtener parámetros del GET
+    category = request.GET.get('category')
+    order = request.GET.get('order')
+
+    # Filtrar por categoría si viene en GET
+    if category:
+        products = products.filter(category=category)
+
+    # Ordenar por precio si viene en GET
+    if order == "asc":
+        products = products.order_by('price')
+    elif order == "desc":
+        products = products.order_by('-price')
+    else:
+        products = products.order_by("-created_at")  # Default: recientes primero
+
+    # Obtener todas las categorías para el dropdown
+    categories = Product.objects.values_list('category', flat=True).distinct()
+
+    return render(
+        request,
+        "product_list.html",
+        {
+            "products": products,
+            "categories": categories
+        }
+    )
 
 #CREAR PRODUCTO 
 

@@ -24,7 +24,7 @@ def price_suggest(request):
                 f"Precio actual (si hay): {data.get('current_price')}\n\n"
                 "Devuelve: Precio sugerido y una explicación corta."
             )
-            respuesta = generate_text(prompt)
+            respuesta = generate_text(prompt, max_output_tokens=150)
             sugerencia = respuesta
     else:
         form = PriceSuggestForm()
@@ -49,10 +49,10 @@ def ai_chat(request):
         if form.is_valid():
             user_msg = form.cleaned_data["message"]
 
-            # Construimos prompt con últimos 6 turnos
+            # Construimos prompt con últimos 4 turnos
             system = "Sos un asistente amablemente orientado a ayudar en un marketplace (publicar, comprar, trueque). Responde en español."
             accumulated = system + "\n\n"
-            for turn in history[-6:]:
+            for turn in history[-4:]:
                 accumulated += f"Usuario: {turn['user']}\nAsistente: {turn['ai']}\n"
             accumulated += f"Usuario: {user_msg}\nAsistente: "
 

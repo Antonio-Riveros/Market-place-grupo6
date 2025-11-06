@@ -3,6 +3,7 @@ html, body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 body {
@@ -25,22 +26,18 @@ main, .content, .container {
 
 .hero {
     position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    width: 100vw;          /* ocupa todo el ancho de la ventana */
-    height: 100vh;         /* ocupa todo el alto de la ventana */
+    width: 100vw;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: #ff7b00;
     color: #fff;
     text-align: center;
-    border-radius: 0;
-    box-shadow: none;
+    overflow: hidden;
     z-index: 0;
 }
+
 
 /* contenido dentro del hero */
 .hero-content {

@@ -12,7 +12,7 @@ body {
 }
 
 /* Evita que los contenedores padres limiten el ancho */
-main, .content, .container {
+main, .content {
     padding: 0;
     margin: 0;
 }

@@ -42,6 +42,14 @@
 
       {% if user.is_authenticated %}
         <a href="{% url 'market:add-to-cart' product.id %}" class="btn-primary">🛒 Agregar al carrito</a>
+
+        {% if user == product.seller %}
+          <div style="margin-top:10px;">
+            <a href="{% url 'market:product-edit' product.id %}" class="btn-edit">✏️ Editar</a>
+            <a href="{% url 'market:product-delete' product.id %}" class="btn-delete">🗑️ Eliminar</a>
+          </div>
+        {% endif %}
+
       {% else %}
         <a href="{% url 'account_login' %}" class="btn-secondary">Inicia sesión para comprar</a>
       {% endif %}
@@ -51,7 +59,6 @@
   {% endfor %}
 </div>
 
-<!-- CSS del template (igual que antes) -->
 <style>
 .card-grid {
   display: grid;
@@ -106,7 +113,9 @@
 
 .btn-add,
 .btn-primary,
-.btn-secondary {
+.btn-secondary,
+.btn-edit,
+.btn-delete {
   display: inline-block;
   padding: 8px 15px;
   border-radius: 20px;
@@ -115,31 +124,19 @@
   transition: background 0.3s;
 }
 
-.btn-add {
-  background-color: #28a745;
-  color: white;
-}
+.btn-add { background-color: #28a745; color: white; }
+.btn-add:hover { background-color: #218838; }
 
-.btn-add:hover {
-  background-color: #218838;
-}
+.btn-primary { background-color: #007bff; color: white; }
+.btn-primary:hover { background-color: #0056b3; }
 
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
+.btn-secondary { background-color: #6c757d; color: white; }
+.btn-secondary:hover { background-color: #5a6268; }
 
-.btn-primary:hover {
-  background-color: #0056b3;
-}
+.btn-edit { background-color: #ffc107; color: white; margin-right: 5px; }
+.btn-edit:hover { background-color: #e0a800; }
 
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #5a6268;
-}
+.btn-delete { background-color: #dc3545; color: white; }
+.btn-delete:hover { background-color: #c82333; }
 </style>
 {% endblock %}

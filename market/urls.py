@@ -8,10 +8,17 @@ urlpatterns = [
     path("create/", views.product_create, name="productcreate"),
     path("edit/<int:pk>/", views.product_edit, name="product-edit"),
     path("delete/<int:pk>/", views.product_delete, name="product-delete"),
+
+    # Carrito
     path("cart/", views.view_cart, name="view-cart"),
     path("add/<int:product_id>/", views.add_to_cart, name="add-to-cart"),
+    path("cart/increase/<int:product_id>/", views.cart_increase, name="cart-increase"),
+    path("cart/decrease/<int:product_id>/", views.cart_decrease, name="cart-decrease"),
+    path("cart/remove/<int:product_id>/", views.cart_remove, name="cart-remove"),
+    path("cart/summary/", views.cart_summary, name="cart-summary"),
+    path("cart/data/", views.cart_data, name="cart-data"),
 
     # Mercado Pago
-    # path("pago/<int:product_id>/", views.create_preference, name="crear-preferencia"),
     path("pago-carrito/", views.create_preference_cart, name="crear-preferencia-carrito"),
 ]
+

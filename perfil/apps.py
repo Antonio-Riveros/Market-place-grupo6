@@ -6,4 +6,4 @@ class PerfilConfig(AppConfig):
     name = 'perfil'
 
 def ready(self):
-    import app.signals
+    import perfil.signals  # Asegúrate de importar los signals

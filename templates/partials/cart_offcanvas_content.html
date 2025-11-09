@@ -1,0 +1,24 @@
+{% if cart.items.all %}
+  {% for item in cart.items.all %}
+  <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+    <div>
+      <strong>{{ item.product.title }}</strong><br>
+      <small>Cantidad: {{ item.quantity }}</small>
+    </div>
+    <div>
+      <span class="fw-semibold">${{ item.subtotal }}</span>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="mt-3 text-end">
+    <h5 class="fw-bold">Total: ${{ cart.total }}</h5>
+    <a href="{% url 'market:view-cart' %}" class="btn btn-outline-primary mt-2 w-100">
+      Ver carrito completo
+    </a>
+  </div>
+{% else %}
+  <div class="text-center text-muted py-5">
+    <p>Tu carrito está vacío 🕊️</p>
+  </div>
+{% endif %}

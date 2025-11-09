@@ -1,130 +1,67 @@
 {% extends "base.html" %}
-
+{% block title %}Editar perfil{% endblock %}
+{% load widget_tweaks %}
 {% block content %}
-<div class="profile-edit-container">
-  <h2>Editar perfil</h2>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow border-0 rounded-4">
+        <div class="card-body p-4">
+          <h3 class="text-center mb-4">Editar perfil</h3>
 
-  <!-- Avatar actual -->
-  <div class="avatar-preview">
-    {% if request.user.profile.avatar %}
-      <img src="{{ request.user.profile.avatar.url }}" alt="Avatar">
-    {% else %}
-      <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=random" alt="Avatar">
-    {% endif %}
-    <p>Subí una nueva foto si querés actualizar tu avatar</p>
-  </div>
+          <!-- Avatar -->
+          <div class="text-center mb-4">
+            {% if request.user.profile.avatar %}
+              <img src="{{ request.user.profile.avatar.url }}" alt="Avatar" class="rounded-circle border border-primary" style="width:120px; height:120px; object-fit:cover;">
+            {% else %}
+              <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=random" alt="Avatar" class="rounded-circle border border-primary" style="width:120px; height:120px; object-fit:cover;">
+            {% endif %}
+            <p class="text-muted mt-2">Subí una nueva foto para actualizar tu avatar</p>
+          </div>
 
-  <form method="POST" enctype="multipart/form-data" class="profile-edit-form">
-    {% csrf_token %}
-    
-    {% for field in form %}
-      <div class="form-group">
-        {{ field.label_tag }}
-        {{ field }}
-        {% if field.help_text %}
-          <small class="form-text text-muted">{{ field.help_text }}</small>
-        {% endif %}
-        {% for error in field.errors %}
-          <div class="text-danger">{{ error }}</div>
-        {% endfor %}
+          <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% for field in form %}
+              <div class="mb-3">
+                {{ field.label_tag }}
+                {{ field|add_class:"form-control" }}
+                {% if field.help_text %}
+                  <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                  <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary w-100 mt-3">Guardar cambios</button>
+          </form>
+
+          <div class="text-center mt-3">
+            <a href="{% url 'profile' %}" class="text-decoration-none">⬅ Volver al perfil</a>
+          </div>
+        </div>
       </div>
-    {% endfor %}
-
-    <button type="submit" class="btn-save">Guardar cambios</button>
-  </form>
+    </div>
+  </div>
 </div>
+{% endblock %}
 
-<style>
-.profile-edit-container {
-  max-width: 550px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  font-family: 'Arial', sans-serif;
-  transition: all 0.3s;
-}
-
-.profile-edit-container h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-  font-weight: 600;
-}
-
-.avatar-preview {
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.avatar-preview img {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #007bff;
-  margin-bottom: 10px;
-  transition: transform 0.3s;
-}
-
-.avatar-preview img:hover {
-  transform: scale(1.05);
-}
-
-.avatar-preview p {
-  color: #555;
-  font-size: 0.9rem;
-}
-
-.profile-edit-form .form-group {
-  margin-bottom: 18px;
-  display: flex;
-  flex-direction: column;
-}
-
-.profile-edit-form label {
-  font-weight: 600;
-  margin-bottom: 5px;
-  color: #555;
-}
-
-.profile-edit-form input,
-.profile-edit-form textarea,
-.profile-edit-form select {
-  padding: 12px 15px;
-  border-radius: 50px;
-  border: 1px solid #ddd;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.profile-edit-form input:focus,
-.profile-edit-form textarea:focus,
-.profile-edit-form select:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0,123,255,0.2);
-}
-
-.btn-save {
-  display: block;
-  width: 100%;
-  background-color: #ffcc00;
-  color: white;
-  padding: 12px 0;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-  margin-top: 15px;
-}
-
-.btn-save:hover {
-  background-color: #e68a00;
-  transform: scale(1.02);
-}
-</style>
+{% block extra_js %}
+<script>
+  // Opcional: puedes agregar preview en vivo del avatar al subir imagen
+  const avatarInput = document.querySelector('input[type="file"]');
+  const avatarImg = document.querySelector('.card-body img.rounded-circle');
+  if(avatarInput && avatarImg){
+    avatarInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if(file){
+        const reader = new FileReader();
+        reader.onload = e => avatarImg.src = e.target.result;
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+</script>
 {% endblock %}

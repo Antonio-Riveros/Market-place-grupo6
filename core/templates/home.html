@@ -1,38 +1,42 @@
 {% extends "base.html" %}
 {% load static %}
+{% get_media_prefix as MEDIA_URL %}
 {% load socialaccount %}
 {% block title %}Inicio • Mercadito{% endblock %}
 
 {% block content %}
-<div class="home-container">
-  <h1 class="home-title">Bienvenido a Mercadito</h1>
-
-  {% if not user.is_authenticated %}
-    <p>Iniciá sesión para comprar, vender o intercambiar productos</p>
-    <div class="social-login">
-      <!-- Botón Google -->
-      <a href="{% provider_login_url 'google' %}" role="button" class="btn-social google">
-        <i class="fab fa-google"></i>
-      </a>
-      <!-- Botón GitHub -->
-      <a href="{% provider_login_url 'github' %}" role="button" class="btn-social github">
-        <i class="fab fa-github"></i>
-      </a>
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+<section class="hero">
+    <div class="hero-content">
+        <h1>Bienvenido a tu mercadito de confianza</h1>
+        <p>El lugar donde comprar y vender es fácil, seguro y divertido</p>
+        <a href="{% url 'core:tienda' %}" class="hero-btn">Ver productos</a>
     </div>
-  {% else %}
-    <h2 class="section-title">Últimos productos</h2>
-    <div class="card-grid">
-      {% for product in products %}
-        <div class="card">
-          <h3>{{ product.title }}</h3>
-          <p>{{ product.description|truncatewords:15 }}</p>
-          <p><strong>${{ product.price }}</strong></p>
-          <a href="{% url 'market:productlist' %}" class="btn-primary">Ver más</a>
+</section>
+<div class="principal">
+    <main class="product-list">
+        <!-- Producto 1 -->
+        <div class="product">
+            <img src="..\media\home\primera-imagen.jpg" alt="Chica escribiendo en una computadora.">
+            <div class="description">
+                <p>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+                    Architecto modi iure maiores accusantium voluptas aliquid.
+                </p>
+            </div>
         </div>
-      {% empty %}
-        <p>No hay productos publicados todavía.</p>
-      {% endfor %}
-    </div>
-  {% endif %}
+
+        <!-- Producto 2 -->
+        <div class="product reverse">
+            <div class="description">
+                <p>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+                    Nihil magni mollitia deleniti, inventore corporis adipisci!
+                </p>
+            </div>
+            <img src="https://via.placeholder.com/150" alt="Producto 2">
+        </div>
+    </main>
 </div>
+
 {% endblock %}

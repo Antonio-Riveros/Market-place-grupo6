@@ -4,6 +4,7 @@ from django.db import models
 class Product(models.Model):
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="products")
     title = models.CharField(max_length=200)
+    category = models.CharField(max_length=200, blank=True, default="sin categoria")
     description = models.TextField(blank=True)
     marca = models.CharField(max_length=100, blank=True, default="Generico")
     price = models.DecimalField(max_digits=12, decimal_places=2)
@@ -30,6 +31,9 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        unique_together = ('cart', 'product') 
 
     def subtotal(self):
         return self.product.price * self.quantity

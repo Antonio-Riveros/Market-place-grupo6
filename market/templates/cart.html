@@ -2,33 +2,71 @@
 {% block title %}Tu carrito{% endblock %}
 
 {% block content %}
-<h2>Carrito de compras</h2>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h2 class="mb-4 text-center">🛒 Tu carrito de compras</h2>
 
-{% if cart.items.all %}
-  <ul>
-    {% for item in cart.items.all %}
-      <li>{{ item.product.title }} (x{{ item.quantity }}) — ${{ item.subtotal }}</li>
-    {% endfor %}
-  </ul>
-  <p><strong>Total:</strong> ${{ cart.total }}</p>
+      {% if cart.items.all %}
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            {% for item in cart.items.all %}
+              <div class="d-flex justify-content-between align-items-center border-bottom py-3">
+                <div>
+                  <h6 class="mb-0">{{ item.product.title }}</h6>
+                  <div class="d-flex align-items-center mt-1">
+                    <!-- Botones para cambiar cantidad -->
+                    <a href="{% url 'market:cart-decrease' item.product.id %}" class="btn btn-sm btn-outline-secondary me-2">➖</a>
+                    <span class="fw-semibold">{{ item.quantity }}</span>
+                    <a href="{% url 'market:cart-increase' item.product.id %}" class="btn btn-sm btn-outline-secondary ms-2">➕</a>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="fw-semibold d-block mb-1">${{ item.subtotal }}</span>
+                  <!-- Botón para eliminar producto -->
+                  <a href="{% url 'market:cart-remove' item.product.id %}" class="btn btn-sm btn-outline-danger">🗑️ Quitar</a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
 
-  <!-- Botón de pago de todo el carrito -->
-  <button id="checkout-btn" class="btn btn-primary">Pagar carrito completo</button>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Total:</h5>
+          <h4 class="text-primary mb-0 fw-bold">${{ cart.total }}</h4>
+        </div>
 
-  <script src="https://sdk.mercadopago.com/js/v2"></script>
-  <script>
-    const mp = new MercadoPago("{{ PUBLIC_KEY }}", { locale: 'es-AR' });
+        <!-- Botón de pago -->
+        <div class="text-center">
+          <button id="checkout-btn" class="btn btn-success btn-lg px-5">
+            💳 Pagar carrito completo
+          </button>
+        </div>
 
-    document.getElementById("checkout-btn").addEventListener("click", () => {
-      fetch("{% url 'market:crear-preferencia-carrito' %}")
-        .then(response => response.json())
-        .then(data => {
-          window.location.href = data.init_point;
-        });
-    });
-  </script>
+        <script src="https://sdk.mercadopago.com/js/v2"></script>
+        <script>
+          const mp = new MercadoPago("{{ PUBLIC_KEY }}", { locale: 'es-AR' });
 
-{% else %}
-  <p>Tu carrito está vacío.</p>
-{% endif %}
+          document.getElementById("checkout-btn").addEventListener("click", () => {
+            fetch("{% url 'market:crear-preferencia-carrito' %}")
+              .then(response => response.json())
+              .then(data => {
+                window.location.href = data.init_point;
+              })
+              .catch(() => {
+                alert("Hubo un problema al generar el pago. Intenta nuevamente.");
+              });
+          });
+        </script>
+      {% else %}
+        <div class="text-center p-5 bg-light rounded-3 shadow-sm">
+          <h5 class="text-muted">Tu carrito está vacío 🕊️</h5>
+          <a href="{% url 'market:productlist' %}" class="btn btn-outline-primary mt-3">
+            Ver productos
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

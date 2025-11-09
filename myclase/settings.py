@@ -35,6 +35,7 @@ TERCEROS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.github",
+    'widget_tweaks',
 ]
 
 PROPIAS = [
@@ -116,13 +117,28 @@ TEMPLATES = [
 WSGI_APPLICATION = "myclase.wsgi.application"
 
 # ==============================================================
-# 🗄️ BASE DE DATOS
+# 🗄️ BASE DE DATOS, USA EL QUE SEA NECESARIO PARA QUE FUNCIONE, UNO ES DE SQLITE Y EL OTRO MYSQL
 # ==============================================================
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": os.getenv("DATABASE_NAME"),
+#     }
+# }
+
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
+        "ENGINE": "django.db.backends.mysql",
         "NAME": os.getenv("DATABASE_NAME"),
+        "USER": os.getenv("DATABASE_USER"),
+        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+        "HOST": os.getenv("DATABASE_HOST", "localhost"),
+        "PORT": os.getenv("DATABASE_PORT", "3306"),
+        "OPTIONS": {
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
+        },
     }
 }
 

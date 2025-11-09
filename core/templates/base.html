@@ -114,37 +114,84 @@
             <a class="nav-link px-3" href="{% url 'market:productlist' %}">🏬 Tienda</a>
           </li>
 
-          {% if user.is_authenticated %}
-            <li class="nav-item ms-3 d-flex align-items-center text-white">
-              Hola, {{ user.first_name|default:user.username }}
-            </li>
+{% if user.is_authenticated %}
+  <li class="nav-item ms-3 d-flex align-items-center text-white">
+    Hola, {{ user.first_name|default:user.username }}
+  </li>
 
-            <li class="nav-item ms-2">
-              <a href="{% url 'profile' %}" class="nav-link p-0">
-                {% if user.profile.avatar %}
-                  <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="rounded-circle" width="36" height="36" style="object-fit: cover;">
-                {% else %}
-                  <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" alt="Avatar" class="rounded-circle" width="36" height="36">
-                {% endif %}
-              </a>
-            </li>
+  <!-- Dropdown de usuario -->
+  <li class="nav-item dropdown ms-2">
+    <a class="nav-link dropdown-toggle d-flex align-items-center p-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      {% if user.profile.avatar %}
+        <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="rounded-circle" width="36" height="36" style="object-fit: cover;">
+      {% else %}
+        <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" alt="Avatar" class="rounded-circle" width="36" height="36">
+      {% endif %}
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+      <li>
+        <a class="dropdown-item" href="{% url 'profile' %}">
+          <i class="fa-solid fa-user me-2"></i> Ver perfil
+        </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="#">
+          <i class="fa-solid fa-box me-2"></i> Mis compras
+        </a>
+      </li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <form method="post" action="{% url 'account_logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="dropdown-item text-danger">
+            <i class="fa-solid fa-right-from-bracket me-2"></i> Cerrar sesión
+          </button>
+        </form>
+      </li>
+    </ul>
+  </li>
 
-            <li class="nav-item ms-2">
-              <form method="post" action="{% url 'account_logout' %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-light btn-sm">Salir</button>
-              </form>
-            </li>
-          {% else %}
-            <li class="nav-item ms-2">
-              <a href="{% url 'core:login' %}" class="btn btn-outline-light btn-sm">Ingresar</a>
-            </li>
-          {% endif %}
+  <li class="nav-item ms-3">
+    <button class="btn btn-outline-light position-relative" id="cartButton" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+      🛒
+    </button>
+  </li>
+{% else %}
+  <li class="nav-item ms-2">
+    <a href="{% url 'core:login' %}" class="btn btn-outline-light btn-sm">Ingresar</a>
+  </li>
+{% endif %}
+
 
         </ul>
       </div>
     </div>
   </nav>
+
+  <!-- Carrito Offcanvas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
+  <div class="offcanvas-header bg-dark text-white">
+    <h5 class="offcanvas-title" id="cartOffcanvasLabel">🛒 Tu carrito</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <div id="cartItemsContainer" class="mb-3 text-center text-muted">
+      Cargando carrito...
+    </div>
+
+    <div id="cartTotalContainer" class="d-flex justify-content-between align-items-center border-top pt-3">
+      <h6 class="mb-0 fw-bold">Total:</h6>
+      <h6 id="cartTotal" class="text-primary mb-0 fw-bold">$0</h6>
+    </div>
+
+    <div class="text-center mt-4">
+      <button id="checkout-btn" class="btn btn-success w-100">
+        💳 Pagar carrito completo
+      </button>
+    </div>
+  </div>
+</div>
 
   <!-- Contenido principal -->
   <main class="main-content">
@@ -184,7 +231,64 @@
     </div>
   </footer>
 
-  {% block extra_js %}{% endblock %}
+  {% block extra_js %}
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const offcanvasEl = document.getElementById("cartOffcanvas");
+  const cartContainer = document.getElementById("cartItemsContainer");
+  const cartTotalEl = document.getElementById("cartTotal");
+
+  // Cargar carrito
+  function loadCart() {
+    fetch("{% url 'market:cart-data' %}")
+      .then(response => response.json())
+      .then(data => {
+        if (data.items.length === 0) {
+          cartContainer.innerHTML = `<p class="text-muted mt-3">Tu carrito está vacío 🕊️</p>`;
+          cartTotalEl.textContent = "$0";
+          return;
+        }
+
+        cartContainer.innerHTML = data.items.map(item => `
+          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+              <strong>${item.title}</strong><br>
+              <small>$${item.price}</small>
+              <div class="d-flex align-items-center mt-1">
+                <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateCart('${item.id}', 'decrease')">➖</button>
+                <span class="fw-semibold">${item.quantity}</span>
+                <button class="btn btn-sm btn-outline-secondary ms-2" onclick="updateCart('${item.id}', 'increase')">➕</button>
+              </div>
+            </div>
+            <div class="text-end">
+              <span class="fw-semibold d-block mb-1">$${item.subtotal}</span>
+              <button class="btn btn-sm btn-outline-danger" onclick="updateCart('${item.id}', 'remove')">🗑️</button>
+            </div>
+          </div>
+        `).join("");
+
+        cartTotalEl.textContent = `$${data.total}`;
+      })
+      .catch(() => {
+        cartContainer.innerHTML = `<p class="text-danger mt-3">Error al cargar el carrito.</p>`;
+      });
+  }
+
+  // Al abrir el carrito, cargar los datos
+  offcanvasEl.addEventListener("show.bs.offcanvas", loadCart);
+
+  // Actualizar carrito sin recargar ni cerrar
+  window.updateCart = function (productId, action) {
+    fetch(`/cart/${action}/${productId}/`)
+      .then(() => loadCart())
+      .catch(() => alert("Error al actualizar el carrito"));
+  };
+});
+</script>
+
+
+
+  {% endblock %}
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="product-container">
-  <h2 style="text-align:center; margin-bottom:20px;">Publicar producto</h2>
+  <h2 class="text-center mb-4">Publicar producto</h2>
   <form method="post" enctype="multipart/form-data" class="product-form">
     {% csrf_token %}
 
@@ -47,7 +47,12 @@
       {{ form.active }}
     </div>
 
-    <button type="submit" class="btn-submit">Publicar</button>
+    <!-- Botones -->
+    <div class="d-flex justify-content-between mt-3">
+      <a href="{% url 'market:productlist' %}" class="btn btn-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-success">Publicar</button>
+    </div>
+
   </form>
 </div>
 
@@ -97,20 +102,19 @@
   box-shadow: 0 0 5px rgba(0,123,255,0.3);
 }
 
-.btn-submit {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 20px;
+.btn-success, .btn-secondary {
   padding: 10px 25px;
+  border-radius: 20px;
   font-size: 1rem;
-  cursor: pointer;
-  align-self: flex-start;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
-.btn-submit:hover {
+.btn-success:hover {
   background-color: #218838;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
 }
 </style>
 {% endblock %}

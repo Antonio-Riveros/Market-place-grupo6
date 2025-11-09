@@ -1,294 +1,97 @@
 {% load static %}
-
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <title>{% block title %}Elsi{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap & FontAwesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-  <style>
-    /* Navbar personalizado */
-    .navbar {
-      padding: 0.8rem 1rem;
-    }
-    .navbar-brand {
-      font-size: 1.6rem;
-      color: #ff7b00 !important;
-    }
-    .nav-link {
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-    .nav-link:hover {
-      color: #ff7b00 !important;
-    }
 
-    /* Avatar pequeño y redondeado */
-    .navbar img.rounded-circle {
-      border: 2px solid #fff;
-    }
+  <!-- Estilos globales -->
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
-    /* Footer */
-    footer {
-      background-color: #222;
-      color: #ccc;
-      padding: 40px 0 20px;
-      margin-top: 50px;
-      font-family: 'Arial', sans-serif;
-    }
-
-    footer a {
-      color: #ff7b00;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    footer a:hover {
-      color: #fff;
-    }
-
-    .footer-top {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      justify-content: space-between;
-      margin-bottom: 30px;
-    }
-
-    .footer-section h5 {
-      color: #fff;
-      margin-bottom: 15px;
-      font-size: 1.1rem;
-    }
-
-    .footer-section ul {
-      list-style: none;
-      padding: 0;
-    }
-
-    .footer-section li {
-      margin-bottom: 8px;
-    }
-
-    .footer-bottom {
-      text-align: center;
-      border-top: 1px solid #444;
-      padding-top: 15px;
-      font-size: 0.9rem;
-      color: #888;
-    }
-
-    .map-container {
-      border-radius: 12px;
-      overflow: hidden;
-      height: 250px;
-      margin-top: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-  </style>
+  <!-- Estilos específicos de cada página -->
+  {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-light">
 
+<body>
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
     <div class="container">
       <a class="navbar-brand fw-bold" href="{% url 'home' %}">ELSI</a>
-
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav align-items-center">
+          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market_ai:aichat' %}">🤖 SugerIAs</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market_ai:pricesuggest' %}">💰 PrecIA</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market:productlist' %}">🏬 Tienda</a></li>
 
-          <li class="nav-item">
-            <a class="nav-link px-3" href="{% url 'market_ai:aichat' %}">🤖 SugerIAs</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link px-3" href="{% url 'market_ai:pricesuggest' %}">💰 PrecIA</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link px-3" href="{% url 'market:productlist' %}">🏬 Tienda</a>
-          </li>
-
-{% if user.is_authenticated %}
-  <li class="nav-item ms-3 d-flex align-items-center text-white">
-    Hola, {{ user.first_name|default:user.username }}
-  </li>
-
-  <!-- Dropdown de usuario -->
-  <li class="nav-item dropdown ms-2">
-    <a class="nav-link dropdown-toggle d-flex align-items-center p-0" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-      {% if user.profile.avatar %}
-        <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="rounded-circle" width="36" height="36" style="object-fit: cover;">
-      {% else %}
-        <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" alt="Avatar" class="rounded-circle" width="36" height="36">
-      {% endif %}
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
-      <li>
-        <a class="dropdown-item" href="{% url 'profile' %}">
-          <i class="fa-solid fa-user me-2"></i> Ver perfil
-        </a>
-      </li>
-      <li>
-        <a class="dropdown-item" href="#">
-          <i class="fa-solid fa-box me-2"></i> Mis compras
-        </a>
-      </li>
-      <li><hr class="dropdown-divider"></li>
-      <li>
-        <form method="post" action="{% url 'account_logout' %}">
-          {% csrf_token %}
-          <button type="submit" class="dropdown-item text-danger">
-            <i class="fa-solid fa-right-from-bracket me-2"></i> Cerrar sesión
-          </button>
-        </form>
-      </li>
-    </ul>
-  </li>
-
-  <li class="nav-item ms-3">
-    <button class="btn btn-outline-light position-relative" id="cartButton" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
-      🛒
-    </button>
-  </li>
-{% else %}
-  <li class="nav-item ms-2">
-    <a href="{% url 'core:login' %}" class="btn btn-outline-light btn-sm">Ingresar</a>
-  </li>
-{% endif %}
-
-
+          {% if user.is_authenticated %}
+            <li class="nav-item ms-3 text-white">Hola, {{ user.first_name|default:user.username }}</li>
+            <li class="nav-item dropdown ms-2">
+              <a class="nav-link dropdown-toggle d-flex align-items-center p-0" href="#" data-bs-toggle="dropdown">
+                {% if user.profile.avatar %}
+                  <img src="{{ user.profile.avatar.url }}" class="rounded-circle" width="36" height="36" style="object-fit: cover;">
+                {% else %}
+                  <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" class="rounded-circle" width="36" height="36">
+                {% endif %}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fa-solid fa-user me-2"></i>Perfil</a></li>
+                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-box me-2"></i>Mis compras</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <form method="post" action="{% url 'account_logout' %}">{% csrf_token %}
+                    <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-right-from-bracket me-2"></i>Salir</button>
+                  </form>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item ms-3">
+              <button class="btn btn-outline-light position-relative" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">🛒</button>
+            </li>
+          {% else %}
+            <li class="nav-item ms-2"><a href="{% url 'core:login' %}" class="btn btn-outline-light btn-sm">Ingresar</a></li>
+          {% endif %}
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- Carrito Offcanvas -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
-  <div class="offcanvas-header bg-dark text-white">
-    <h5 class="offcanvas-title" id="cartOffcanvasLabel">🛒 Tu carrito</h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
-  </div>
-
-  <div class="offcanvas-body">
-    <div id="cartItemsContainer" class="mb-3 text-center text-muted">
-      Cargando carrito...
-    </div>
-
-    <div id="cartTotalContainer" class="d-flex justify-content-between align-items-center border-top pt-3">
-      <h6 class="mb-0 fw-bold">Total:</h6>
-      <h6 id="cartTotal" class="text-primary mb-0 fw-bold">$0</h6>
-    </div>
-
-    <div class="text-center mt-4">
-      <button id="checkout-btn" class="btn btn-success w-100">
-        💳 Pagar carrito completo
-      </button>
-    </div>
-  </div>
-</div>
-
   <!-- Contenido principal -->
-  <main class="main-content">
-    {% block content %}{% endblock %}
-  </main>
+  <main>{% block content %}{% endblock %}</main>
 
   <!-- Footer -->
-  <footer>
-    <div class="container">
-      <div class="footer-top">
-        <div class="footer-section col-md-4">
-          <h5>Mercadito</h5>
-          <p>Tu mercado online de confianza. Compra y vende productos de manera sencilla y segura.</p>
-        </div>
-
-        <div class="footer-section col-md-4">
-          <h5>Contacto</h5>
-          <ul>
-            <li><i class="fas fa-phone-alt"></i> +54 9 11 1234-5678</li>
-            <li><i class="fas fa-envelope"></i> soporte@mercadito.com</li>
-            <li><i class="fas fa-map-marker-alt"></i> Buenos Aires, Argentina</li>
-          </ul>
-        </div>
-
-        <div class="footer-section col-md-4">
-          <h5>Mapa</h5>
-          <div class="map-container">
-            <iframe src="https://maps.google.com/maps?q=Buenos%20Aires&t=&z=13&ie=UTF8&iwloc=&output=embed" 
-              width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-          </div>
-        </div>
+  <footer class="footer">
+    <div class="container footer-top">
+      <div class="footer-section">
+        <h5>Mercadito</h5>
+        <p>Tu mercado online de confianza. Compra y vende productos fácil y seguro.</p>
       </div>
-
-      <div class="footer-bottom">
-        &copy; {{ now|date:"Y" }} Mercadito. Todos los derechos reservados.
+      <div class="footer-section">
+        <h5>Contacto</h5>
+        <p><i class="fas fa-phone-alt"></i> +54 9 11 1234-5678</p>
+        <p><i class="fas fa-envelope"></i> soporte@mercadito.com</p>
+        <p><i class="fas fa-map-marker-alt"></i> Buenos Aires, Argentina</p>
+      </div>
+      <div class="footer-section">
+        <h5>Mapa</h5>
+        <div class="map-container">
+          <iframe src="https://maps.google.com/maps?q=Buenos%20Aires&t=&z=13&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style="border:0;"></iframe>
+        </div>
       </div>
     </div>
+    <div class="footer-bottom">&copy; {{ now|date:"Y" }} Mercadito. Todos los derechos reservados.</div>
   </footer>
 
-  {% block extra_js %}
-  <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const offcanvasEl = document.getElementById("cartOffcanvas");
-  const cartContainer = document.getElementById("cartItemsContainer");
-  const cartTotalEl = document.getElementById("cartTotal");
-
-  // Cargar carrito
-  function loadCart() {
-    fetch("{% url 'market:cart-data' %}")
-      .then(response => response.json())
-      .then(data => {
-        if (data.items.length === 0) {
-          cartContainer.innerHTML = `<p class="text-muted mt-3">Tu carrito está vacío 🕊️</p>`;
-          cartTotalEl.textContent = "$0";
-          return;
-        }
-
-        cartContainer.innerHTML = data.items.map(item => `
-          <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-            <div>
-              <strong>${item.title}</strong><br>
-              <small>$${item.price}</small>
-              <div class="d-flex align-items-center mt-1">
-                <button class="btn btn-sm btn-outline-secondary me-2" onclick="updateCart('${item.id}', 'decrease')">➖</button>
-                <span class="fw-semibold">${item.quantity}</span>
-                <button class="btn btn-sm btn-outline-secondary ms-2" onclick="updateCart('${item.id}', 'increase')">➕</button>
-              </div>
-            </div>
-            <div class="text-end">
-              <span class="fw-semibold d-block mb-1">$${item.subtotal}</span>
-              <button class="btn btn-sm btn-outline-danger" onclick="updateCart('${item.id}', 'remove')">🗑️</button>
-            </div>
-          </div>
-        `).join("");
-
-        cartTotalEl.textContent = `$${data.total}`;
-      })
-      .catch(() => {
-        cartContainer.innerHTML = `<p class="text-danger mt-3">Error al cargar el carrito.</p>`;
-      });
-  }
-
-  // Al abrir el carrito, cargar los datos
-  offcanvasEl.addEventListener("show.bs.offcanvas", loadCart);
-
-  // Actualizar carrito sin recargar ni cerrar
-  window.updateCart = function (productId, action) {
-    fetch(`/cart/${action}/${productId}/`)
-      .then(() => loadCart())
-      .catch(() => alert("Error al actualizar el carrito"));
-  };
-});
-</script>
-
-
-
-  {% endblock %}
+  {% block extra_js %}{% endblock %}
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

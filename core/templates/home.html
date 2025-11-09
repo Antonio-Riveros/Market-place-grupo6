@@ -1,42 +1,73 @@
 {% extends "base.html" %}
 {% load static %}
-{% get_media_prefix as MEDIA_URL %}
-{% load socialaccount %}
-{% block title %}Inicio • Mercadito{% endblock %}
+{% block title %}Inicio • ELSI{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/home.css' %}">
-<section class="hero">
-    <div class="hero-content">
-        <h1>Bienvenido a tu mercadito de confianza</h1>
-        <p>El lugar donde comprar y vender es fácil, seguro y divertido</p>
-        <a href="{% url 'core:tienda' %}" class="hero-btn">Ver productos</a>
+<link rel="stylesheet" href="..\static\css\home.css">
+<!-- HERO -->
+  <section class="hero">
+    <h1>Vende y compra fácil</h1>
+    <p>Publicá tus productos y descubrí miles de artículos de otras personas.</p>
+    <div class="hero-buttons">
+      <a href="#publicar" class="btn-primary">Vender ahora</a>
+      <a href="#explorar" class="btn-outline">Explorar productos</a>
     </div>
-</section>
-<div class="principal">
-    <main class="product-list">
-        <!-- Producto 1 -->
-        <div class="product">
-            <img src="..\media\home\primera-imagen.jpg" alt="Chica escribiendo en una computadora.">
-            <div class="description">
-                <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. 
-                    Architecto modi iure maiores accusantium voluptas aliquid.
-                </p>
-            </div>
-        </div>
+  </section>
 
-        <!-- Producto 2 -->
-        <div class="product reverse">
-            <div class="description">
-                <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. 
-                    Nihil magni mollitia deleniti, inventore corporis adipisci!
-                </p>
-            </div>
-            <img src="https://via.placeholder.com/150" alt="Producto 2">
-        </div>
-    </main>
-</div>
+  <!-- COMO FUNCIONA -->
+  <section class="section como-funciona">
+    <h2>Cómo funciona</h2>
+    <div class="cards">
+      <div class="card">
+        <span class="emoji">🧑‍💻</span>
+        <h3>1. Creá tu cuenta</h3>
+        <p>Registrate con tu correo o cuenta de Google y configurá tu perfil de vendedor.</p>
+      </div>
+      <div class="card">
+        <span class="emoji">📸</span>
+        <h3>2. Publicá tu producto</h3>
+        <p>Subí fotos, agregá una descripción, elegí el precio y publicá en minutos.</p>
+      </div>
+      <div class="card">
+        <span class="emoji">🤝</span>
+        <h3>3. Vendé o comprá</h3>
+        <p>Recibí consultas, concretá la venta o buscá entre miles de artículos disponibles.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCION VENDER -->
+  <section id="publicar" class="section vender">
+    <h2>¿Querés vender algo?</h2>
+    <p>Publicá tu producto fácilmente, gestioná consultas y concretá ventas sin complicaciones.</p>
+    <a href="/vender" class="btn-indigo">Publicar producto</a>
+  </section>
+
+  <!-- SECCION EXPLORAR -->
+  <section id="explorar" class="section explorar">
+    <h2>Explorá los productos de otras personas</h2>
+    <p>Buscá por categoría o precio. Encontrá lo que necesitás de forma rápida y segura.</p>
+    <a href="/productos" class="btn-purple">Ver productos</a>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section faq">
+    <h2>Preguntas frecuentes</h2>
+    <div class="faq-grid">
+      <div>
+        <h3>¿Cuánto cuesta publicar?</h3>
+        <p>Publicar es gratis. Solo se aplica una pequeña comisión al concretar una venta.</p>
+      </div>
+      <div>
+        <h3>¿Cómo recibo el pago?</h3>
+        <p>Podés recibirlo por transferencia o a través de medios integrados como Mercado Pago.</p>
+      </div>
+      <div>
+        <h3>¿Qué pasa si hay un problema?</h3>
+        <p>Contamos con soporte y políticas de protección para compradores y vendedores.</p>
+      </div>
+    </div>
+  </section>
 
 {% endblock %}
+

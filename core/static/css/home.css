@@ -1,190 +1,212 @@
-/* ===== Reset general ===== */
-html, body {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    overflow-x: hidden;
-}
-
+/* ===== Estilos generales ===== */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #fafafa;
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  background-color: #f9fafb;
+  color: #333;
 }
 
-/* Evita que los contenedores padres limiten el ancho */
-main, .content {
-    padding: 0;
-    margin: 0;
-}
-
-/* ===== Sección HERO ===== */
-.hero-wrapper {
-    width: 100vw;
-    margin: 0;
-    padding: 0;
-}
-
+/* ===== HERO ===== */
 .hero {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #ff7b00;
-    color: #fff;
-    text-align: center;
-    overflow: hidden;
-    z-index: 0;
-}
-
-
-/* contenido dentro del hero */
-.hero-content {
-    max-width: 600px;
-    padding: 20px;
+  text-align: center;
+  padding: 6rem 1rem;
+  background: linear-gradient(180deg, #0056b3, #8b5cf6);
+  color: white;
 }
 
 .hero h1 {
-    font-size: 2.8rem;
-    margin-bottom: 15px;
-    font-weight: bold;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
 }
 
 .hero p {
-    font-size: 1.2rem;
-    margin-bottom: 25px;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
 }
 
-.hero-btn {
-    background: #fff;
-    color: #ff7b00;
-    padding: 12px 25px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: background 0.3s, color 0.3s;
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.hero-btn:hover {
-    background: #ff9f3c;
-    color: #fff;
+.btn-primary {
+  background: white;
+  color: #4f46e5;
+  font-weight: 600;
+  padding: 0.9rem 1.8rem;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background 0.3s;
 }
 
-/* ===== Sección PRINCIPAL ===== */
-.principal {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 40px 20px;
+.btn-primary:hover {
+  background: #f3f4f6;
 }
 
-/* Lista de productos o pasos */
-.product-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+.btn-outline {
+  border: 2px solid white;
+  color: white;
+  padding: 0.9rem 1.8rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s;
 }
 
-.product {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 15px;
-    gap: 20px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+.btn-outline:hover {
+  background: white;
+  color: #4f46e5;
 }
 
-/* invierte el orden (texto a la izquierda, imagen a la derecha) */
-.product.reverse {
-    flex-direction: row-reverse;
+/* ===== SECCIONES ===== */
+.section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 5rem 1rem;
+  text-align: center;
 }
 
-/* Imagenes */
-.product img {
-    width: 250px;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 10px;
-    flex-shrink: 0;
+.section h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2.5rem;
 }
 
-/* Descripción */
-.description {
-    flex: 1;
-    color: #333;
-    font-size: 1rem;
-    line-height: 1.5;
+/* ===== COMO FUNCIONA ===== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.card .emoji {
+  font-size: 3rem;
+  color: #6366f1;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+/* ===== SECCION VENDER ===== */
+.vender {
+  background-color: #eef2ff;
+}
+
+.vender h2 {
+  color: #4f46e5;
+}
+
+.btn-indigo {
+  background: #4f46e5;
+  color: white;
+  padding: 0.9rem 1.8rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.btn-indigo:hover {
+  background: #4338ca;
+}
+
+/* ===== SECCION EXPLORAR ===== */
+.btn-purple {
+  background: #7c3aed;
+  color: white;
+  padding: 0.9rem 1.8rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.btn-purple:hover {
+  background: #6d28d9;
+}
+
+/* ===== FAQ ===== */
+.faq {
+  background: #f3f4f6;
+  text-align: left;
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.faq-grid h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
-
-/* 🔹 Ajuste del hero en pantallas chicas */
 @media (max-width: 768px) {
   .hero {
-    height: auto; /* deja que crezca según el contenido */
-    padding: 80px 20px;
-    text-align: center;
+    padding: 4rem 1rem;
   }
 
-  .hero-content {
-    max-width: 100%;
-    padding: 0 10px;
-  }
-
-  .hero-content h1 {
+  .hero h1 {
     font-size: 2rem;
   }
 
-  .hero-content p {
-    font-size: 1.1rem;
-  }
-
-  .hero-btn {
+  .hero p {
     font-size: 1rem;
-    padding: 10px 20px;
   }
-}
 
-@media (max-width: 900px) {
-    .product {
-        flex-direction: column;
-        text-align: center;
-    }
+  .section {
+    padding: 3.5rem 1rem;
+  }
 
-    .product.reverse {
-        flex-direction: column;
-    }
-
-    .product img {
-        width: 100%;
-        height: auto;
-        max-width: 400px;
-    }
-
-    .description {
-        margin-top: 10px;
-    }
+  .section h2 {
+    font-size: 1.7rem;
+  }
 }
 
 @media (max-width: 480px) {
-    .principal {
-        padding: 10px;
-    }
+  .hero {
+    padding: 3rem 1rem;
+  }
 
-    .product {
-        padding: 10px;
-    }
+  .hero h1 {
+    font-size: 1.7rem;
+  }
 
-    .product img {
-        max-width: 100%;
-        border-radius: 8px;
-    }
+  .hero p {
+    font-size: 0.95rem;
+  }
 
-    .description {
-        font-size: 0.95rem;
-    }
+  .btn {
+    width: 100%;
+    display: block;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .faq-grid {
+    grid-template-columns: 1fr;
+  }
 }
 

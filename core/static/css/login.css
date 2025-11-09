@@ -1,0 +1,171 @@
+/* ===== Variables de color ===== */
+:root {
+  --primary: #007bff;
+  --primary-dark: #0056b3;
+  --accent: #ffca28;
+  --background: #f0f2f5;
+  --text-main: #333;
+  --text-light: #888;
+  --white: #fff;
+}
+
+/* ===== Contenedor principal ===== */
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: var(--background);
+  padding: 20px;
+}
+
+/* ===== Tarjeta del formulario ===== */
+.auth-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 35px 25px;
+  background: var(--white);
+  border-radius: 25px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  text-align: center;
+  animation: fadeIn 0.4s ease-in-out;
+  transition: transform 0.3s ease;
+}
+
+.auth-container:hover {
+  transform: translateY(-5px);
+}
+
+/* ===== Títulos ===== */
+.auth-container h2 {
+  color: var(--text-main);
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* ===== Inputs ===== */
+.form-group input {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  margin-bottom: 18px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  border-color: var(--primary);
+}
+
+/* ===== Botón principal ===== */
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
+}
+
+.btn-login:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+}
+
+/* ===== Divider ===== */
+.divider {
+  color: var(--text-light);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+  gap: 10px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #b3b2b2;
+}
+
+/* ===== Login social ===== */
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.btn-social {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  font-size: 26px;
+  color: var(--white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-social.google { background: #DB4437; }
+.btn-social.github { background: #333; }
+
+.btn-social:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Footer (enlaces pequeños) ===== */
+.auth-footer {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+.auth-footer a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Animación ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 600px) {
+  .auth-container {
+    padding: 25px 18px;
+    border-radius: 18px;
+  }
+
+  .btn-social {
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+  }
+
+  .auth-container h2 {
+    font-size: 1.5rem;
+  }
+}
+

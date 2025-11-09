@@ -7,10 +7,11 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", home, name="home"),
-    path("accounts/", include("allauth.urls")),  # allauth
-    path("market/", include("market.urls")),  # users
-    path("profiles/", include("perfil.urls")),  # profiles
-    path("ai/", include("market_ai.urls")),  # AI
+    path("accounts/", include("allauth.urls")),  
+    path("market/", include("market.urls")),  
+    path("profiles/", include("perfil.urls")), 
+    path("ai/", include("market_ai.urls")),  
+    path('accounts/', include('django.contrib.auth.urls')),  
     path('', include('core.urls')),
 # ============Semana7=================================   
     path("", include("presence.urls")), #sesion activa

@@ -75,7 +75,11 @@
           {% if user == product.seller %}
           <div class="d-flex justify-content-center gap-2 mt-2">
             <a href="{% url 'market:product-edit' product.id %}" class="btn btn-warning text-white btn-sm rounded-pill px-3">✏️</a>
-            <a href="{% url 'market:product-delete' product.id %}" class="btn btn-danger btn-sm rounded-pill px-3">🗑️</a>
+            <button class="btn btn-danger btn-sm rounded-pill px-3 js-open-delete-modal"
+                    data-delete-url="{% url 'market:product-delete' product.id %}"
+                    data-product-title="{{ product.title|escapejs }}">
+              🗑️
+            </button>
           </div>
           {% endif %}
           {% else %}
@@ -92,17 +96,43 @@
   </div>
 </div>
 
+<!-- Modal único para confirmar eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-danger text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="deleteModalLabel">⚠️ Confirmar eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center py-4">
+        <p class="fs-5 text-dark mb-0">
+          ¿Estás seguro de que querés eliminar <strong id="deleteModalProductTitle"></strong>?
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center border-0 pb-4">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+        <form id="deleteModalForm" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger rounded-pill px-4">Eliminar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toasts -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 2000;">
   <div id="toastSuccess" class="toast align-items-center text-bg-success border-0 mb-2" role="alert">
     <div class="d-flex">
-      <div class="toast-body">Producto agregado al carrito ✅</div>
+      <div class="toast-body">Producto agregado al carrito ✓</div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>
   </div>
   <div id="toastError" class="toast align-items-center text-bg-danger border-0" role="alert">
     <div class="d-flex">
-      <div class="toast-body">⚠️ No se pudo conectar con el servidor.</div>
+      <div class="toast-body">⚠︎ No se pudo conectar con el servidor.</div>
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>
   </div>
@@ -115,24 +145,53 @@ document.addEventListener("DOMContentLoaded", () => {
   const toastSuccess = new bootstrap.Toast(document.getElementById('toastSuccess'));
   const toastError = new bootstrap.Toast(document.getElementById('toastError'));
 
+  // --- AGREGAR AL CARRITO ---
   addButtons.forEach(btn => {
     btn.addEventListener("click", () => {
       const productId = btn.dataset.id;
-      btn.innerHTML = "🕒 Agregando...";
+      btn.innerHTML = "Agregando...";
       fetch(`/market/add/${productId}/`, {
         method: "GET",
         headers: { "X-Requested-With": "XMLHttpRequest" }
       })
       .then(response => response.json())
       .then(data => {
-        btn.innerHTML = "🛒 Agregar al carrito";
+        btn.innerHTML = "Agregar al carrito";
         data.success ? toastSuccess.show() : toastError.show();
       })
       .catch(() => {
-        btn.innerHTML = "🛒 Agregar al carrito";
+        btn.innerHTML = "Agregar al carrito";
         toastError.show();
       });
     });
+  });
+
+  // --- MODAL DE ELIMINACIÓN ---
+  const modalEl = document.getElementById('deleteModal');
+  const deleteModal = new bootstrap.Modal(modalEl, {
+    backdrop: true,
+    keyboard: true
+  });
+
+  const modalForm = document.getElementById('deleteModalForm');
+  const titleEl = document.getElementById('deleteModalProductTitle');
+
+  document.querySelectorAll('.js-open-delete-modal').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const deleteUrl = btn.dataset.deleteUrl;
+      const productTitle = btn.dataset.productTitle || 'este producto';
+      titleEl.textContent = productTitle;
+      modalForm.action = deleteUrl;
+      deleteModal.show();
+    });
+  });
+
+  // --- CERRAR MODAL CORRECTAMENTE ---
+  modalEl.addEventListener('hidden.bs.modal', () => {
+    document.body.classList.remove('modal-open');
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) backdrop.remove();
   });
 });
 </script>
@@ -160,12 +219,8 @@ document.addEventListener("DOMContentLoaded", () => {
   list-style: none;
   font-size: 1.1rem;
 }
-.filter-panel summary::marker {
-  display: none;
-}
-.filter-panel form {
-  margin-top: 10px;
-}
+.filter-panel summary::marker { display: none; }
+.filter-panel form { margin-top: 10px; }
 
 /* ===== PRODUCTOS ===== */
 .product-card {
@@ -177,35 +232,27 @@ document.addEventListener("DOMContentLoaded", () => {
   transform: translateY(-6px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
-.product-img-wrapper {
-  overflow: hidden;
-  border-radius: 16px 16px 0 0;
-}
+.product-img-wrapper { overflow: hidden; border-radius: 16px 16px 0 0; }
 .product-img {
   height: 220px;
   width: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
-.product-card:hover .product-img {
-  transform: scale(1.05);
-}
-.price-tag {
-  font-size: 1.2rem;
-  color: var(--primary-dark);
-}
+.product-card:hover .product-img { transform: scale(1.05); }
+.price-tag { font-size: 1.2rem; color: var(--primary-dark); }
+
+/* ===== MODAL ===== */
+.modal-content { border-radius: 16px; overflow: hidden; }
+.modal-header { background-color: #dc3545 !important; }
+.modal-footer .btn-secondary { background-color: var(--accent); color: #333; border: none; }
+.modal-footer .btn-danger { background-color: #dc3545; border: none; }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .catalog-header {
-    padding: 30px 20px;
-  }
-  .product-img {
-    height: 180px;
-  }
-  .filter-panel {
-    padding: 15px;
-  }
+  .catalog-header { padding: 30px 20px; }
+  .product-img { height: 180px; }
+  .filter-panel { padding: 15px; }
 }
 </style>
 {% endblock %}

@@ -1,9 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Nuevo producto{% endblock %}
+{% block title %}Nuevo producto • Mercadito{% endblock %}
 
 {% block content %}
-<div class="product-container">
-  <h2 class="text-center mb-4">Publicar producto</h2>
+<div class="product-container fade-in">
+  <h2 class="text-center mb-4 fw-bold text-primary">
+    Publicar nuevo producto
+  </h2>
+
   <form method="post" enctype="multipart/form-data" class="product-form">
     {% csrf_token %}
 
@@ -42,35 +45,45 @@
       {{ form.image }}
     </div>
 
-    <div class="form-group">
-      {{ form.active.label_tag }}
+    <div class="form-group form-check">
       {{ form.active }}
+      {{ form.active.label_tag }}
     </div>
 
     <!-- Botones -->
-    <div class="d-flex justify-content-between mt-3">
-      <a href="{% url 'market:productlist' %}" class="btn btn-secondary">Cancelar</a>
-      <button type="submit" class="btn btn-success">Publicar</button>
+    <div class="d-flex justify-content-between mt-4">
+      <a href="{% url 'market:productlist' %}" class="btn btn-cancel rounded-pill px-4 py-2 fw-semibold shadow-sm">
+        Cancelar
+      </a>
+      <button type="submit" class="btn btn-submit rounded-pill px-4 py-2 fw-semibold shadow-sm">
+        Publicar
+      </button>
     </div>
-
   </form>
 </div>
 
 <style>
+/* ===== CONTENEDOR PRINCIPAL ===== */
 .product-container {
-  max-width: 600px;
+  max-width: 650px;
   margin: 0 auto;
-  padding: 25px;
-  background: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 30px;
   font-family: 'Arial', sans-serif;
+  background: #f9f9f9;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  animation: fadeIn 0.4s ease-in-out;
 }
 
+/* ===== FORMULARIO ===== */
 .product-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
+  background: #e8edf3;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .form-group {
@@ -79,19 +92,20 @@
 }
 
 .form-group label {
-  margin-bottom: 5px;
   font-weight: bold;
   color: #333;
+  margin-bottom: 5px;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #ccc;
   font-size: 1rem;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
+  background-color: white;
 }
 
 .form-group input:focus,
@@ -99,22 +113,64 @@
 .form-group select:focus {
   outline: none;
   border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+  box-shadow: 0 0 6px rgba(0,123,255,0.3);
 }
 
-.btn-success, .btn-secondary {
-  padding: 10px 25px;
-  border-radius: 20px;
-  font-size: 1rem;
-  transition: all 0.3s;
+/* ===== CHECKBOX ACTIVO ===== */
+.form-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.btn-success:hover {
-  background-color: #218838;
+.form-check input {
+  transform: scale(1.2);
 }
 
-.btn-secondary:hover {
-  background-color: #5a6268;
+/* ===== BOTONES ===== */
+.btn {
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-submit {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-submit:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+.btn-cancel {
+  background-color: white;
+  color: #292929;
+}
+
+.btn-cancel:hover {
+  background-color: #d8e2ec;
+}
+
+/* ===== EFECTO DE APARICIÓN ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 576px) {
+  .product-container {
+    padding: 15px;
+  }
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+  .d-flex {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 </style>
 {% endblock %}

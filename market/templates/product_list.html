@@ -2,26 +2,24 @@
 {% block title %}Productos • Mercadito{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <!-- Título principal -->
-  <h2 class="text-center fw-bold mb-5 display-6 text-primary">
-    🛍️ Catálogo de Productos
-  </h2>
+<section class="catalog-header text-center py-5 mb-4">
+  <h2 class="fw-bold display-6 text-primary">Catálogo de Productos</h2>
+  <p class="text-muted mt-2">Descubrí lo mejor del Mercadito, todo en un solo lugar</p>
 
-  <!-- Botón para publicar -->
   {% if user.is_authenticated %}
-  <div class="text-center mb-4">
-    <a href="{% url 'market:productcreate' %}" class="btn btn-success px-4 py-2 rounded-pill shadow-sm fw-semibold">
-      ➕ Publicar nuevo producto
-    </a>
-  </div>
+  <a href="{% url 'market:productcreate' %}" class="btn btn-success mt-3 px-4 py-2 rounded-pill shadow-sm fw-semibold">
+    + Publicar nuevo producto
+  </a>
   {% endif %}
+</section>
 
+<div class="container py-4">
   <!-- FILTROS -->
-  <form method="get" class="card shadow-sm border-0 mb-5 p-3 bg-light">
-    <div class="row align-items-center justify-content-center gy-3">
+  <details class="filter-panel card shadow-sm border-0 mb-5 p-3 bg-light">
+    <summary class="fw-bold text-primary mb-3">Filtrar productos por:</summary>
+    <form method="get" class="row align-items-center justify-content-center gy-3">
       <div class="col-md-4 col-sm-6">
-        <label for="category" class="form-label fw-semibold">Categoría</label>
+        <label for="category" class="form-label fw-semibold">🏷️ Categoría</label>
         <select name="category" id="category" class="form-select">
           <option value="">Todas</option>
           {% for cat in categories %}
@@ -33,7 +31,7 @@
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <label for="order" class="form-label fw-semibold">Ordenar por precio</label>
+        <label for="order" class="form-label fw-semibold">💲 Ordenar por precio</label>
         <select name="order" id="order" class="form-select">
           <option value="">Sin ordenar</option>
           <option value="asc" {% if request.GET.order == "asc" %}selected{% endif %}>Menor a Mayor</option>
@@ -43,34 +41,35 @@
 
       <div class="col-md-2 text-center">
         <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm mt-3 mt-md-0 fw-semibold">
-          Filtrar 🔍
+          Aplicar
         </button>
       </div>
-    </div>
-  </form>
+    </form>
+  </details>
 
   <!-- PRODUCTOS -->
   <div class="row g-4">
     {% for product in products %}
     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-      <div class="card h-100 border-0 shadow-sm product-card position-relative">
+      <div class="card h-100 border-0 shadow-sm product-card position-relative overflow-hidden">
         {% if product.image %}
-        <img src="{{ product.image.url }}" class="card-img-top rounded-top product-img" alt="{{ product.title }}">
+        <div class="product-img-wrapper">
+          <img src="{{ product.image.url }}" class="card-img-top product-img" alt="{{ product.title }}">
+        </div>
         {% else %}
         <div class="bg-secondary text-white text-center py-5 rounded-top">
           <i class="bi bi-box-seam fs-1"></i>
         </div>
         {% endif %}
 
-        <div class="card-body text-center p-3 d-flex flex-column">
+        <div class="card-body text-center d-flex flex-column">
           <h5 class="card-title fw-bold text-dark mb-2">{{ product.title }}</h5>
           <p class="text-muted small flex-grow-1">{{ product.description|truncatewords:18 }}</p>
-
-          <p class="fs-5 fw-bold text-success mb-3">${{ product.price }}</p>
+          <p class="fs-5 fw-bold text-success mb-3 price-tag">${{ product.price }}</p>
 
           {% if user.is_authenticated %}
           <button class="btn btn-primary rounded-pill w-100 fw-semibold add-to-cart-btn" data-id="{{ product.id }}">
-            🛒 Agregar al carrito
+            Agregar al carrito
           </button>
 
           {% if user == product.seller %}
@@ -81,7 +80,7 @@
           {% endif %}
           {% else %}
           <a href="{% url 'account_login' %}" class="btn btn-outline-secondary rounded-pill w-100">
-            Inicia sesión para comprar
+            Iniciá sesión para comprar
           </a>
           {% endif %}
         </div>
@@ -101,7 +100,6 @@
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>
   </div>
-
   <div id="toastError" class="toast align-items-center text-bg-danger border-0" role="alert">
     <div class="d-flex">
       <div class="toast-body">⚠️ No se pudo conectar con el servidor.</div>
@@ -120,38 +118,94 @@ document.addEventListener("DOMContentLoaded", () => {
   addButtons.forEach(btn => {
     btn.addEventListener("click", () => {
       const productId = btn.dataset.id;
-
+      btn.innerHTML = "🕒 Agregando...";
       fetch(`/market/add/${productId}/`, {
         method: "GET",
         headers: { "X-Requested-With": "XMLHttpRequest" }
       })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            toastSuccess.show();
-            if (typeof loadCart === "function") loadCart();
-          } else {
-            toastError.show();
-          }
-        })
-        .catch(() => toastError.show());
+      .then(response => response.json())
+      .then(data => {
+        btn.innerHTML = "🛒 Agregar al carrito";
+        data.success ? toastSuccess.show() : toastError.show();
+      })
+      .catch(() => {
+        btn.innerHTML = "🛒 Agregar al carrito";
+        toastError.show();
+      });
     });
   });
 });
 </script>
 
 <style>
+:root {
+  --primary: #007bff;
+  --primary-dark: #0056b3;
+  --bg-light: #f5f7fb;
+  --accent: #e8edf3;
+}
+
+/* ===== HERO ===== */
+.catalog-header {
+  background: linear-gradient(135deg, var(--accent), #f9fbfd);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ===== FILTROS ===== */
+.filter-panel summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 1.1rem;
+}
+.filter-panel summary::marker {
+  display: none;
+}
+.filter-panel form {
+  margin-top: 10px;
+}
+
+/* ===== PRODUCTOS ===== */
 .product-card {
-  transition: all 0.2s ease-in-out;
-  border-radius: 1rem;
+  transition: all 0.3s ease;
+  border-radius: 16px;
+  background: #fff;
 }
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+.product-img-wrapper {
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
 }
 .product-img {
-  height: 200px;
+  height: 220px;
+  width: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.product-card:hover .product-img {
+  transform: scale(1.05);
+}
+.price-tag {
+  font-size: 1.2rem;
+  color: var(--primary-dark);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .catalog-header {
+    padding: 30px 20px;
+  }
+  .product-img {
+    height: 180px;
+  }
+  .filter-panel {
+    padding: 15px;
+  }
 }
 </style>
 {% endblock %}

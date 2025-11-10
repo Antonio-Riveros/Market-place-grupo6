@@ -1,22 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 style="text-align:center; margin-bottom:20px;">Chat asistente del Mercadito (IA)</h2>
+
+<h2 class="chat-title">SugerIAs para ayudarte!</h2>
 
 <div class="chat-container">
   <div class="chat-box" id="chatBox">
     {% if history %}
       {% for turn in history %}
         <div class="message user-message">
-          <span class="sender">Tú:</span>
+          <span class="sender">🧍‍♀️ Tú</span>
           <span class="text">{{ turn.user }}</span>
         </div>
         <div class="message ai-message">
-          <span class="sender">Asistente:</span>
+          <span class="sender">🤖 Asistente</span>
           <span class="text">{{ turn.ai }}</span>
         </div>
       {% endfor %}
     {% else %}
-      <p class="no-messages">El chat empieza vacío. ¡Escribí algo para comenzar!</p>
+      <p class="no-messages">El chat está vacío. ¡Escribí algo para comenzar! 🗨️</p>
     {% endif %}
   </div>
 
@@ -24,73 +25,98 @@
     {% csrf_token %}
     <div class="input-container">
       <textarea id="chatInput" name="message" rows="1" placeholder="Escribí tu mensaje..." required></textarea>
-      <button type="submit" class="btn-send">Enviar</button>
-      <button type="submit" name="clear_chat" class="btn-clear">Limpiar chat</button>
+      <button type="submit" class="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
+      <button type="submit" name="clear_chat" class="btn-clear"><i class="fa-solid fa-trash"></i></button>
     </div>
   </form>
-
-
 </div>
 
 <style>
+/* ======= Estilos del Chat ======= */
+.chat-title {
+  text-align: center;
+  margin: 30px 0 20px;
+  color: var(--primary-dark);
+  font-weight: 700;
+  font-size: 1.6rem;
+  letter-spacing: 0.5px;
+}
+
 .chat-container {
-  max-width: 700px;
+  max-width: 800px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 15px;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 20px;
 }
 
 .chat-box {
-  border: 1px solid #ccc;
+  border: 1px solid #dee2e6;
   border-radius: 12px;
-  padding: 15px;
-  height: 400px;
+  padding: 20px;
+  height: 450px;
   overflow-y: auto;
-  background: #f9f9f9;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  background: var(--background);
+  scroll-behavior: smooth;
 }
 
+/* ======= Mensajes ======= */
 .message {
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   max-width: 80%;
-  padding: 10px 15px;
-  border-radius: 15px;
+  padding: 12px 16px;
+  border-radius: 16px;
   word-wrap: break-word;
+  line-height: 1.4;
+  font-size: 0.95rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(5px);}
+  to {opacity: 1; transform: translateY(0);}
 }
 
 .user-message {
-  background: #007bff;
-  color: white;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: var(--white);
   align-self: flex-end;
+  border-bottom-right-radius: 4px;
 }
 
 .ai-message {
-  background: #e2e2e2;
-  color: #333;
+  background: #e8edf3;
+  color: var(--text-main);
   align-self: flex-start;
+  border-bottom-left-radius: 4px;
 }
 
 .sender {
-  font-weight: bold;
-  margin-bottom: 5px;
-  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  opacity: 0.8;
 }
 
+/* ======= Formulario ======= */
 .chat-form {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  margin-top: 10px;
 }
 
 .input-container {
   display: flex;
   gap: 10px;
   width: 100%;
-  position: relative;
+  align-items: center;
 }
 
 textarea#chatInput {
@@ -107,54 +133,67 @@ textarea#chatInput {
 
 textarea#chatInput:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--primary);
   box-shadow: 0 0 5px rgba(0,123,255,0.3);
 }
 
-.btn-send {
-  background-color: #28a745;
-  color: white;
+/* Botones */
+.btn-send, .btn-clear {
   border: none;
-  border-radius: 20px;
-  padding: 0 20px;
-  font-size: 1rem;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
   cursor: pointer;
-  transition: background 0.3s;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.btn-send {
+  background-color: var(--primary);
+  color: var(--white);
 }
 
 .btn-send:hover {
-  background-color: #218838;
-}
-
-.no-messages {
-  text-align: center;
-  color: #888;
-  margin-top: 50%;
-  font-style: italic;
+  background-color: var(--primary-dark);
+  transform: scale(1.05);
 }
 
 .btn-clear {
   background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 0 15px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.3s;
+  color: var(--white);
 }
 
 .btn-clear:hover {
-  background-color: #c82333;
+  background-color: #b02a37;
+  transform: scale(1.05);
 }
 
+/* ======= Sin mensajes ======= */
+.no-messages {
+  text-align: center;
+  color: var(--text-light);
+  margin-top: 35%;
+  font-style: italic;
+}
 
+/* ======= Responsivo ======= */
+@media (max-width: 768px) {
+  .chat-container {
+    padding: 15px;
+  }
 
+  .chat-box {
+    height: 400px;
+  }
 
-
-
-
-
+  .btn-send, .btn-clear {
+    width: 40px;
+    height: 40px;
+  }
+}
 </style>
 
 <script>
@@ -171,4 +210,5 @@ chatInput.addEventListener('input', e => {
   chatInput.style.height = chatInput.scrollHeight + 'px';
 });
 </script>
+
 {% endblock %}

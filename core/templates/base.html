@@ -28,9 +28,9 @@
 
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav align-items-center">
-          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market_ai:aichat' %}">🤖 SugerIAs</a></li>
-          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market_ai:pricesuggest' %}">💰 PrecIA</a></li>
-          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market:productlist' %}">🏬 Tienda</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market_ai:aichat' %}"><img src="{% static 'base_icons/sugerias_icon.png' %}" alt="" style="width:22px; height:22px; margin-right: 5px;">SugerIAs</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market_ai:pricesuggest' %}"><img src="{% static 'base_icons/precia_icon.png' %}" alt="" style="width:22px; height:22px; margin-right: 5px;">PrecIA</a></li>
+          <li class="nav-item"><a class="nav-link px-3" href="{% url 'market:productlist' %}"><img src="{% static 'base_icons/tienda.png' %}" alt="" style="width:22px; height:22px; margin-right: 5px;">Tienda</a></li>
 
           {% if user.is_authenticated %}
             <li class="nav-item ms-3 text-white">Hola, {{ user.first_name|default:user.username }}</li>

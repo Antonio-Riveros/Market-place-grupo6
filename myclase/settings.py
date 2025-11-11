@@ -11,9 +11,13 @@ load_dotenv(BASE_DIR / '.env')
 # 🔒 CONFIGURACIÓN GENERAL
 # ==============================================================
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+# SECRET_KEY = os.getenv("SECRET_KEY")
+# DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+# ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+
+SECRET_KEY="django-insecure-3z7-*mm6rwki_2vx%7yt+!q83utn^kjwx1m^5u)(iq@qa9rm&a"
+DEBUG="True"
+ALLOWED_HOSTS=["127.0.0.1","localhost"]
 
 # ==============================================================
 # 🧩 APLICACIONES

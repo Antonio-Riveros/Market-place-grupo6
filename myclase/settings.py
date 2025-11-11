@@ -40,6 +40,7 @@ TERCEROS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.github",
     'widget_tweaks',
+    "rest_framework",
 ]
 
 PROPIAS = [
@@ -50,6 +51,7 @@ PROPIAS = [
     "presence",
     "simple_chat",
     "quotes",
+    "pagos"
 ]
 
 INSTALLED_APPS = BASICS + TERCEROS + PROPIAS
@@ -113,6 +115,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.request",
                 "django.template.context_processors.csrf",
+                "core.context_processors.mercadopago_keys",
             ],
         },
     },
@@ -132,19 +135,19 @@ WSGI_APPLICATION = "myclase.wsgi.application"
 # }
 
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": os.getenv("DATABASE_NAME"),
-#         "USER": os.getenv("DATABASE_USER"),
-#         "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-#         "HOST": os.getenv("DATABASE_HOST", "localhost"),
-#         "PORT": os.getenv("DATABASE_PORT", "3306"),
-#         "OPTIONS": {
-#             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
-#         },
-#     }
-# }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DATABASE_NAME"),
+        "USER": os.getenv("DATABASE_USER"),
+        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+        "HOST": os.getenv("DATABASE_HOST", "localhost"),
+        "PORT": os.getenv("DATABASE_PORT", "3306"),
+        "OPTIONS": {
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
+        },
+    }
+}
 
 # ==============================================================
 # 🔑 SOCIAL LOGIN
@@ -168,7 +171,8 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
-MERCADOPAGO_ACCESS_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
+MERCADOPAGO_ACCESS_TOKEN = "APP_USR-1451271072786565-111116-6fb6b3309e7230672672e10b3636e03f-2983315551"
+MERCADOPAGO_PUBLIC_KEY = "APP_USR-a1229bd2-bf92-40e6-87ba-a9204ad04db4"
 
 # ==============================================================
 # 🔒 VALIDADORES DE CONTRASEÑA
@@ -199,7 +203,30 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # esta es tu carpeta global de estáticos
 ]
 
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'antonio.n.riveros18@gmail.com'
+EMAIL_HOST_PASSWORD = 'wxoageehbcgmwpnz'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+
+
+
+
+
+
+
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+
+

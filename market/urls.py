@@ -17,8 +17,9 @@ urlpatterns = [
     path("cart/remove/<int:product_id>/", views.cart_remove, name="cart-remove"),
     path("cart/summary/", views.cart_summary, name="cart-summary"),
     path("cart/data/", views.cart_data, name="cart-data"),
-
+path('cart/generate-budget/', views.generate_budget, name='generate-budget'),
     # Mercado Pago
-    path("pago-carrito/", views.create_preference_cart, name="crear-preferencia-carrito"),
+    path('crear-preferencia-carrito/', views.create_preference_cart, name='crear-preferencia-carrito'),
+
 ]
 

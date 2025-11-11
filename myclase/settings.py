@@ -11,9 +11,13 @@ load_dotenv(BASE_DIR / '.env')
 # 🔒 CONFIGURACIÓN GENERAL
 # ==============================================================
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+# SECRET_KEY = os.getenv("SECRET_KEY")
+# DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+# ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+
+SECRET_KEY="django-insecure-3z7-*mm6rwki_2vx%7yt+!q83utn^kjwx1m^5u)(iq@qa9rm&a"
+DEBUG="True"
+ALLOWED_HOSTS=["127.0.0.1","localhost"]
 
 # ==============================================================
 # 🧩 APLICACIONES
@@ -123,24 +127,24 @@ WSGI_APPLICATION = "myclase.wsgi.application"
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": os.getenv("DATABASE_NAME"),
+#         "NAME": "db.sqlite3",
 #     }
 # }
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DATABASE_NAME"),
-        "USER": os.getenv("DATABASE_USER"),
-        "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-        "HOST": os.getenv("DATABASE_HOST", "localhost"),
-        "PORT": os.getenv("DATABASE_PORT", "3306"),
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
-        },
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": os.getenv("DATABASE_NAME"),
+#         "USER": os.getenv("DATABASE_USER"),
+#         "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+#         "HOST": os.getenv("DATABASE_HOST", "localhost"),
+#         "PORT": os.getenv("DATABASE_PORT", "3306"),
+#         "OPTIONS": {
+#             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
+#         },
+#     }
+# }
 
 # ==============================================================
 # 🔑 SOCIAL LOGIN

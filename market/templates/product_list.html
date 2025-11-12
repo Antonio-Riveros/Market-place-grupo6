@@ -8,14 +8,36 @@
     <p class="lead mt-2">Descubrí lo mejor del Mercadito, todo en un solo lugar</p>
 
     {% if user.is_authenticated %}
-    <a href="{% url 'market:productcreate' %}" class="btn btn-success mt-3 px-4 py-2 rounded-pill fw-semibold pulse-animation">
-      <i class="bi bi-plus-circle me-2"></i>Publicar nuevo producto
-    </a>
-    {% endif %}
+<a href="{% url 'market:productcreate' %}" class="btn btn-success mt-3 px-4 py-2 rounded-pill fw-semibold pulse-animation">
+  <i class="bi bi-plus-circle me-2"></i>Publicar nuevo producto
+</a>
+<a href="{% url 'market:my-products' %}" class="btn btn-outline-light mt-3 px-4 py-2 rounded-pill fw-semibold ms-2">
+  <i class="bi bi-grid me-2"></i>Mis Publicaciones
+</a>
+<!-- BOTÓN DE ADMIN SOLO PARA AntonioA -->
+{% if user.username == 'AntonioA' or user.is_superuser %}
+<a href="{% url 'market:admin-products' %}" class="btn btn-warning mt-3 px-4 py-2 rounded-pill fw-semibold ms-2">
+  <i class="bi bi-shield me-2"></i>Panel Admin
+</a>
+{% endif %}
+{% endif %}
   </div>
 </section>
 
 <div class="container py-4">
+  <!-- ALERTA PARA REACTIVAR PUBLICACIONES -->
+  {% if user.is_authenticated and has_inactive_products %}
+  <div class="alert alert-info d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <i class="bi bi-info-circle me-2"></i>
+      <strong>Tenés publicaciones inactivas</strong> - No son visibles en el catálogo.
+    </div>
+    <a href="{% url 'market:reactivate-all' %}" class="btn btn-info btn-sm">
+      <i class="bi bi-arrow-clockwise me-1"></i>Reactivar Todo
+    </a>
+  </div>
+  {% endif %}
+
   <!-- FILTROS MEJORADOS -->
   <div class="filter-panel card shadow-sm border-0 mb-5 p-3 bg-white">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -79,23 +101,45 @@
         <div class="card-body text-center d-flex flex-column">
           <h5 class="card-title fw-bold text-dark mb-2">{{ product.title }}</h5>
           <p class="text-muted small flex-grow-1">{{ product.description|truncatewords:18 }}</p>
+          
+          <!-- INFORMACIÓN DEL VENDEDOR -->
+          <div class="seller-info mb-3 p-2 bg-light rounded">
+            <div class="d-flex align-items-center justify-content-center">
+              <i class="bi bi-person-circle me-2 text-primary"></i>
+              <small class="text-muted">
+                <strong>Vendido por:</strong> 
+                {% if product.seller.get_full_name %}
+                  {{ product.seller.get_full_name }}
+                {% else %}
+                  {{ product.seller.username }}
+                {% endif %}
+              </small>
+            </div>
+          </div>
+
           <p class="fs-5 fw-bold text-success mb-3 price-tag">${{ product.price }}</p>
 
           {% if user.is_authenticated %}
-          <button class="btn btn-primary rounded-pill w-100 fw-semibold add-to-cart-btn" data-id="{{ product.id }}">
-            Agregar al carrito
-          </button>
-
-          {% if user == product.seller %}
-          <div class="d-flex justify-content-center gap-2 mt-2">
-            <a href="{% url 'market:product-edit' product.id %}" class="btn btn-warning text-white btn-sm rounded-pill px-3">✏️</a>
-            <button class="btn btn-danger btn-sm rounded-pill px-3 js-open-delete-modal"
-                    data-delete-url="{% url 'market:product-delete' product.id %}"
-                    data-product-title="{{ product.title|escapejs }}">
-              🗑️
+            {% if product.is_available %}
+            <button class="btn btn-primary rounded-pill w-100 fw-semibold add-to-cart-btn" data-id="{{ product.id }}">
+              Agregar al carrito
             </button>
-          </div>
-          {% endif %}
+            {% else %}
+            <button class="btn btn-secondary rounded-pill w-100 fw-semibold" disabled>
+              No disponible
+            </button>
+            {% endif %}
+
+            {% if user == product.seller or user.username == 'AntonioA' or user.is_superuser %}
+            <div class="d-flex justify-content-center gap-2 mt-2">
+              <a href="{% url 'market:product-edit' product.id %}" class="btn btn-warning text-white btn-sm rounded-pill px-3">✏️</a>
+              <button class="btn btn-danger btn-sm rounded-pill px-3 js-open-delete-modal"
+                      data-delete-url="{% url 'market:product-delete' product.id %}"
+                      data-product-title="{{ product.title|escapejs }}">
+                🗑️
+              </button>
+            </div>
+            {% endif %}
           {% else %}
           <a href="{% url 'account_login' %}" class="btn btn-outline-secondary rounded-pill w-100">
             Iniciá sesión para comprar
@@ -201,7 +245,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     toastSuccess.show();
                     document.dispatchEvent(new Event('productAddedToCart'));
                     document.dispatchEvent(new Event('cartUpdated'));
-                } else { toastError.show(); }
+                } else { 
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        toastError.show();
+                    }
+                }
             })
             .catch(() => { this.innerHTML = originalText; this.disabled = false; toastError.show(); });
         });
@@ -296,6 +346,12 @@ document.addEventListener("DOMContentLoaded", () => {
 .product-card:hover .product-img { transform: scale(1.05); }
 .price-tag { font-size: 1.2rem; color: var(--primary-dark); }
 
+/* INFORMACIÓN DEL VENDEDOR */
+.seller-info {
+  border-left: 3px solid var(--primary);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
 /* MODAL */
 .modal-content { border-radius: 16px; overflow: hidden; }
 .modal-header { background-color: #dc3545 !important; }
@@ -307,6 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
   .catalog-header { padding: 30px 20px; }
   .product-img { height: 180px; }
   .filter-panel { padding: 15px; }
+  .seller-info { font-size: 0.8rem; }
 }
 </style>
 {% endblock %}

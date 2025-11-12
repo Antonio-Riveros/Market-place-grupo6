@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Panel Admin • Mercadito{% endblock %}
+
+{% block content %}
+<section class="admin-header text-center py-5 mb-4 bg-danger text-white">
+  <div class="container">
+    <h2 class="fw-bold display-6">🔧 Panel de Administración</h2>
+    <p class="lead mt-2">Gestión de todas las publicaciones del sistema</p>
+    
+    <div class="d-flex justify-content-center gap-3 mt-4">
+      <a href="{% url 'market:productlist' %}" class="btn btn-outline-light rounded-pill px-4">
+        <i class="bi bi-arrow-left me-2"></i>Volver al Catálogo
+      </a>
+      <a href="{% url 'market:my-products' %}" class="btn btn-light rounded-pill px-4">
+        <i class="bi bi-person me-2"></i>Mis Publicaciones
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="container py-4">
+  <!-- ESTADÍSTICAS -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card text-white bg-primary">
+        <div class="card-body text-center">
+          <h3 class="card-title">{{ total_products }}</h3>
+          <p class="card-text">Total Publicaciones</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-success">
+        <div class="card-body text-center">
+          <h3 class="card-title">{{ active_products }}</h3>
+          <p class="card-text">Publicaciones Activas</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-secondary">
+        <div class="card-body text-center">
+          <h3 class="card-title">{{ inactive_products }}</h3>
+          <p class="card-text">Publicaciones Inactivas</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h5 class="fw-bold mb-0">
+            <i class="bi bi-grid me-2"></i>Todas las Publicaciones
+          </h5>
+        </div>
+        <div class="col-md-6">
+          <form method="get" class="d-flex gap-2">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+              <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Todos los estados</option>
+              <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Solo activos</option>
+              <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Solo inactivos</option>
+            </select>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLA DE PRODUCTOS -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Producto</th>
+              <th>Vendedor</th>
+              <th>Precio</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for product in products %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center">
+                  {% if product.image %}
+                  <img src="{{ product.image.url }}" alt="{{ product.title }}" 
+                       class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                  {% else %}
+                  <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center me-3" 
+                       style="width: 50px; height: 50px;">
+                    <i class="bi bi-box-seam"></i>
+                  </div>
+                  {% endif %}
+                  <div>
+                    <strong class="d-block">{{ product.title }}</strong>
+                    <small class="text-muted">{{ product.category }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <strong>{{ product.seller.username }}</strong>
+                {% if product.seller.get_full_name %}
+                <br><small class="text-muted">{{ product.seller.get_full_name }}</small>
+                {% endif %}
+              </td>
+              <td>
+                <span class="fw-bold text-success">${{ product.price }}</span>
+              </td>
+              <td>
+                {% if product.active %}
+                <span class="badge bg-success">Activo</span>
+                {% else %}
+                <span class="badge bg-secondary">Inactivo</span>
+                {% endif %}
+              </td>
+              <td>
+                <small>{{ product.created_at|date:"d/m/Y" }}</small>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="{% url 'market:product-edit' product.id %}" class="btn btn-outline-primary" 
+                     title="Editar como administrador">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button class="btn btn-outline-danger js-open-delete-modal"
+                          data-delete-url="{% url 'market:product-delete' product.id %}"
+                          data-product-title="{{ product.title|escapejs }}"
+                          title="Eliminar como administrador">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                  {% if not product.active %}
+                  <form method="post" action="{% url 'market:product-toggle-status' product.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="active">
+                    <button type="submit" class="btn btn-outline-success" title="Activar producto">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <p class="text-muted mt-3">No hay publicaciones.</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de eliminación (igual que antes) -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-danger text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="deleteModalLabel">⚠️ Eliminar como Administrador</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <p class="fs-5 text-dark mb-0">
+          ¿Estás seguro de que querés eliminar <strong id="deleteModalProductTitle"></strong>?
+        </p>
+        <small class="text-muted">Esta acción se realizará como administrador.</small>
+      </div>
+      <div class="modal-footer justify-content-center border-0 pb-4">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+        <form id="deleteModalForm" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger rounded-pill px-4">Eliminar como Admin</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Mismo script del modal que en los otros templates
+document.addEventListener("DOMContentLoaded", () => {
+    const modalEl = document.getElementById('deleteModal');
+    const deleteModal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+    const modalForm = document.getElementById('deleteModalForm');
+    const titleEl = document.getElementById('deleteModalProductTitle');
+
+    document.querySelectorAll('.js-open-delete-modal').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            titleEl.textContent = btn.dataset.productTitle || 'este producto';
+            modalForm.action = btn.dataset.deleteUrl;
+            deleteModal.show();
+        });
+    });
+});
+</script>
+
+<style>
+.admin-header {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  box-shadow: var(--shadow-lg);
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+}
+
+.btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+}
+</style>
+{% endblock %}

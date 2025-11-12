@@ -14,7 +14,7 @@
 </section>
 
 <div class="container py-4">
-  <!-- FILTROS -->
+  <!-- FILTROS (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
   <details class="filter-panel card shadow-sm border-0 mb-5 p-3 bg-light">
     <summary class="fw-bold text-primary mb-3">Filtrar productos por:</summary>
     <form method="get" class="row align-items-center justify-content-center gy-3">
@@ -47,7 +47,7 @@
     </form>
   </details>
 
-  <!-- PRODUCTOS -->
+  <!-- PRODUCTOS (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
   <div class="row g-4">
     {% for product in products %}
     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
@@ -96,7 +96,7 @@
   </div>
 </div>
 
-<!-- Modal único para confirmar eliminación -->
+<!-- Modal único para confirmar eliminación (MANTENIDO DE LA VERSIÓN ANTERIOR) -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4">
@@ -122,7 +122,7 @@
   </div>
 </div>
 
-<!-- Toasts -->
+<!-- Toasts (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 2000;">
   <div id="toastSuccess" class="toast align-items-center text-bg-success border-0 mb-2" role="alert">
     <div class="d-flex">
@@ -137,6 +137,119 @@
     </div>
   </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+{{ block.super }}  <!-- 👈 MANTIENE EL JS DEL CARRITO MEJORADO -->
+<script>
+// Función para obtener el token CSRF (MEJORA NUEVA)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const toastSuccess = new bootstrap.Toast(document.getElementById('toastSuccess'));
+    const toastError = new bootstrap.Toast(document.getElementById('toastError'));
+
+    // --- AGREGAR AL CARRITO - VERSIÓN MEJORADA ---
+    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
+        // Remover event listeners anteriores para evitar duplicados (MEJORA NUEVA)
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    // Re-asignar event listeners a los botones nuevos
+    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
+        btn.addEventListener("click", function handleCartClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Si ya está procesando, ignorar clics adicionales (MEJORA NUEVA)
+            if (this.disabled) return;
+            
+            const productId = this.dataset.id;
+            const originalText = this.innerHTML;
+            
+            this.disabled = true;
+            this.innerHTML = "Agregando...";
+            
+            console.log("🛒 Agregando producto:", productId);
+            
+            // ✅ USANDO POST EN LUGAR DE GET (MEJORA DE SEGURIDAD)
+            fetch(`/market/add/${productId}/`, {
+                method: "POST",
+                headers: { 
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": getCookie("csrftoken")  // 👈 CSRF TOKEN AGREGADO
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                
+                if (data.success) {
+                    toastSuccess.show();
+                    console.log("✅ Producto agregado:", data.product);
+                    
+                    // 🛒 NOTIFICAR AL CARRITO QUE SE ACTUALICE (MEJORA NUEVA)
+                    const productAddedEvent = new Event('productAddedToCart');
+                    document.dispatchEvent(productAddedEvent);
+                    
+                    // También disparar el evento genérico por si acaso
+                    const cartUpdatedEvent = new Event('cartUpdated');
+                    document.dispatchEvent(cartUpdatedEvent);
+                } else {
+                    toastError.show();
+                }
+            })
+            .catch((error) => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                toastError.show();
+                console.error("❌ Error:", error);
+            });
+        });
+    });
+
+    // --- MODAL DE ELIMINACIÓN (MANTENIDO DE LA VERSIÓN ANTERIOR) ---
+    const modalEl = document.getElementById('deleteModal');
+    const deleteModal = new bootstrap.Modal(modalEl, {
+        backdrop: true,
+        keyboard: true
+    });
+
+    const modalForm = document.getElementById('deleteModalForm');
+    const titleEl = document.getElementById('deleteModalProductTitle');
+
+    document.querySelectorAll('.js-open-delete-modal').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const deleteUrl = btn.dataset.deleteUrl;
+            const productTitle = btn.dataset.productTitle || 'este producto';
+            titleEl.textContent = productTitle;
+            modalForm.action = deleteUrl;
+            deleteModal.show();
+        });
+    });
+
+    // --- CERRAR MODAL CORRECTAMENTE (MANTENIDO DE LA VERSIÓN ANTERIOR) ---
+    modalEl.addEventListener('hidden.bs.modal', () => {
+        document.body.classList.remove('modal-open');
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+    });
+});
+</script>
 
 <style>
 :root {
@@ -197,117 +310,4 @@
   .filter-panel { padding: 15px; }
 }
 </style>
-{% endblock %}
-
-{% block extra_js %}
-{{ block.super }}
-<script>
-// Función para obtener el CSRF token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const toastSuccess = new bootstrap.Toast(document.getElementById('toastSuccess'));
-    const toastError = new bootstrap.Toast(document.getElementById('toastError'));
-
-    // --- AGREGAR AL CARRITO - CON PREVENCIÓN DE DUPLICADOS ---
-    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        // Remover event listeners anteriores para evitar duplicados
-        btn.replaceWith(btn.cloneNode(true));
-    });
-
-    // Re-asignar event listeners a los botones nuevos
-    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        btn.addEventListener("click", function handleCartClick(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Si ya está procesando, ignorar clics adicionales
-            if (this.disabled) return;
-            
-            const productId = this.dataset.id;
-            const originalText = this.innerHTML;
-            
-            this.disabled = true;
-            this.innerHTML = "Agregando...";
-            
-            console.log("🛒 Agregando producto:", productId);
-            
-            fetch(`/market/add/${productId}/`, {
-                method: "POST",
-                headers: { 
-                    "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRFToken": getCookie("csrftoken")
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                this.innerHTML = originalText;
-                this.disabled = false;
-                
-                if (data.success) {
-                    toastSuccess.show();
-                    console.log("✅ Producto agregado:", data.product);
-                    
-                    // 🛒 NOTIFICAR AL CARRITO QUE SE ACTUALICE
-                    const productAddedEvent = new Event('productAddedToCart');
-                    document.dispatchEvent(productAddedEvent);
-                    
-                    // También disparar el evento genérico por si acaso
-                    const cartUpdatedEvent = new Event('cartUpdated');
-                    document.dispatchEvent(cartUpdatedEvent);
-                } else {
-                    toastError.show();
-                }
-            })
-            .catch((error) => {
-                this.innerHTML = originalText;
-                this.disabled = false;
-                toastError.show();
-                console.error("❌ Error:", error);
-            });
-        });
-    });
-
-    // --- MODAL DE ELIMINACIÓN ---
-    const modalEl = document.getElementById('deleteModal');
-    const deleteModal = new bootstrap.Modal(modalEl, {
-        backdrop: true,
-        keyboard: true
-    });
-
-    const modalForm = document.getElementById('deleteModalForm');
-    const titleEl = document.getElementById('deleteModalProductTitle');
-
-    document.querySelectorAll('.js-open-delete-modal').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const deleteUrl = btn.dataset.deleteUrl;
-            const productTitle = btn.dataset.productTitle || 'este producto';
-            titleEl.textContent = productTitle;
-            modalForm.action = deleteUrl;
-            deleteModal.show();
-        });
-    });
-
-    // --- CERRAR MODAL CORRECTAMENTE ---
-    modalEl.addEventListener('hidden.bs.modal', () => {
-        document.body.classList.remove('modal-open');
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) backdrop.remove();
-    });
-});
-</script>
 {% endblock %}

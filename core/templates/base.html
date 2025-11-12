@@ -121,80 +121,166 @@
   
   {% block extra_js %}
   <script>
-  // 🛒 JAVASCRIPT SEGURO PARA EL CARRITO
-  document.addEventListener("DOMContentLoaded", function() {
-    const cartOffcanvas = document.getElementById("cartOffcanvas");
-    const cartItemsContainer = document.getElementById("cartItemsContainer");
-    const cartTotalEl = document.getElementById("cartTotal");
-    const cartBadge = document.getElementById("cartBadge");
+// 🛒 JAVASCRIPT SEGURO PARA EL CARRITO (CON BOTONES INTERACTIVOS)
+document.addEventListener("DOMContentLoaded", function() {
+  const cartOffcanvas = document.getElementById("cartOffcanvas");
+  const cartItemsContainer = document.getElementById("cartItemsContainer");
+  const cartTotalEl = document.getElementById("cartTotal");
+  const cartBadge = document.getElementById("cartBadge");
 
-    // Función para cargar datos del carrito (SOLO LECTURA)
-    function loadCartData() {
-      fetch("{% url 'market:cart-data' %}")
-        .then(response => {
-          if (!response.ok) throw new Error('Error en la respuesta');
-          return response.json();
-        })
-        .then(data => {
-          // Actualizar badge
-          if (cartBadge) {
-            const totalItems = data.items.reduce((sum, item) => sum + item.quantity, 0);
-            if (totalItems > 0) {
-              cartBadge.textContent = totalItems;
-              cartBadge.style.display = 'block';
-            } else {
-              cartBadge.style.display = 'none';
-            }
+  // Función para cargar datos del carrito (SOLO LECTURA)
+  function loadCartData() {
+    fetch("{% url 'market:cart-data' %}")
+      .then(response => {
+        if (!response.ok) throw new Error('Error en la respuesta');
+        return response.json();
+      })
+      .then(data => {
+        // Actualizar badge
+        updateCartBadge(data.items);
+
+        // Actualizar contenido del offcanvas
+        if (cartItemsContainer) {
+          if (!data.items || data.items.length === 0) {
+            cartItemsContainer.innerHTML = '<p class="text-muted text-center my-3">Tu carrito está vacío 🕊️</p>';
+            cartTotalEl.textContent = "$0";
+            return;
           }
 
-          // Actualizar contenido del offcanvas
-          if (cartItemsContainer) {
-            if (!data.items || data.items.length === 0) {
-              cartItemsContainer.innerHTML = '<p class="text-muted text-center my-3">Tu carrito está vacío 🕊️</p>';
-              cartTotalEl.textContent = "$0";
-              return;
-            }
-
-            cartItemsContainer.innerHTML = data.items.map(item => `
-              <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                <div class="flex-grow-1">
-                  <strong class="d-block">${item.title}</strong>
-                  <small class="text-muted">$${item.price} c/u</small>
-                  <div class="mt-1">
-                    <span class="badge bg-secondary">Cantidad: ${item.quantity}</span>
-                  </div>
-                </div>
-                <div class="text-end ms-2">
-                  <strong class="text-primary d-block">$${item.subtotal}</strong>
+          cartItemsContainer.innerHTML = data.items.map(item => `
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+              <div class="flex-grow-1">
+                <strong class="d-block">${item.title}</strong>
+                <small class="text-muted">$${item.price} c/u</small>
+                <div class="d-flex align-items-center mt-2">
+                  <button type="button" class="btn btn-sm btn-outline-secondary cart-decrease" data-product-id="${item.id}">−</button>
+                  <span class="mx-2">${item.quantity}</span>
+                  <button type="button" class="btn btn-sm btn-outline-secondary cart-increase" data-product-id="${item.id}">+</button>
                 </div>
               </div>
-            `).join('');
+              <div class="text-end ms-2">
+                <strong class="text-primary d-block">$${item.subtotal}</strong>
+                <button type="button" class="btn btn-sm btn-outline-danger cart-remove mt-1" data-product-id="${item.id}">🗑️</button>
+              </div>
+            </div>
+          `).join('');
 
-            cartTotalEl.textContent = `$${data.total}`;
-          }
-        })
-        .catch(error => {
-          console.error('Error cargando carrito:', error);
-          if (cartItemsContainer) {
-            cartItemsContainer.innerHTML = '<p class="text-danger text-center my-3">Error al cargar el carrito</p>';
-          }
-        });
+          cartTotalEl.textContent = `$${data.total}`;
+
+          // Asignar eventos a los botones
+          assignCartButtonEvents();
+        }
+      })
+      .catch(error => {
+        console.error('Error cargando carrito:', error);
+        if (cartItemsContainer) {
+          cartItemsContainer.innerHTML = '<p class="text-danger text-center my-3">Error al cargar el carrito</p>';
+        }
+      });
+  }
+
+  // Función para actualizar el badge del carrito
+  function updateCartBadge(items) {
+    if (cartBadge) {
+      const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+      if (totalItems > 0) {
+        cartBadge.textContent = totalItems;
+        cartBadge.style.display = 'block';
+      } else {
+        cartBadge.style.display = 'none';
+      }
     }
+  }
 
-    // Cargar carrito cuando se abre el offcanvas
-    if (cartOffcanvas) {
-      cartOffcanvas.addEventListener('show.bs.offcanvas', loadCartData);
-    }
-
-    // También cargar el badge al iniciar la página
-    loadCartData();
-
-    // Escuchar eventos personalizados de actualización del carrito
-    document.addEventListener('cartUpdated', function() {
-      loadCartData();
+  // Función para asignar eventos a los botones del carrito
+  function assignCartButtonEvents() {
+    // Botón de aumentar
+    document.querySelectorAll('.cart-increase').forEach(button => {
+      button.addEventListener('click', function() {
+        const productId = this.getAttribute('data-product-id');
+        updateCartItem(productId, 'increase');
+      });
     });
+
+    // Botón de disminuir
+    document.querySelectorAll('.cart-decrease').forEach(button => {
+      button.addEventListener('click', function() {
+        const productId = this.getAttribute('data-product-id');
+        updateCartItem(productId, 'decrease');
+      });
+    });
+
+    // Botón de eliminar
+    document.querySelectorAll('.cart-remove').forEach(button => {
+      button.addEventListener('click', function() {
+        const productId = this.getAttribute('data-product-id');
+        updateCartItem(productId, 'remove');
+      });
+    });
+  }
+
+  // Función para actualizar un item del carrito (aumentar, disminuir, eliminar)
+  function updateCartItem(productId, action) {
+    const url = `/market/cart/${action}/${productId}/`;
+
+    // Mostrar loading en los botones
+    const buttons = document.querySelectorAll(`[data-product-id="${productId}"]`);
+    buttons.forEach(btn => btn.disabled = true);
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        // Recargar los datos del carrito
+        loadCartData();
+        // Disparar evento para que otros componentes se actualicen
+        document.dispatchEvent(new Event('cartUpdated'));
+      } else {
+        console.error('Error en la actualización del carrito');
+        buttons.forEach(btn => btn.disabled = false);
+      }
+    })
+    .catch(error => {
+      console.error('Error de red:', error);
+      buttons.forEach(btn => btn.disabled = false);
+    });
+  }
+
+  // Función para obtener el token CSRF
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Cargar carrito cuando se abre el offcanvas
+  if (cartOffcanvas) {
+    cartOffcanvas.addEventListener('show.bs.offcanvas', loadCartData);
+  }
+
+  // También cargar el badge al iniciar la página
+  loadCartData();
+
+  // Escuchar eventos personalizados de actualización del carrito
+  document.addEventListener('cartUpdated', function() {
+    loadCartData();
   });
-  </script>
+});
+</script>
   {% endblock %}
 </body>
 </html>

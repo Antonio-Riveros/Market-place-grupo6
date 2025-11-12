@@ -13,6 +13,8 @@ urlpatterns = [
     path("ai/", include("market_ai.urls")),  
     path('accounts/', include('django.contrib.auth.urls')),  
     path('', include('core.urls')),
+    
+    path("api/pagos/", include("pagos.urls")),
 # ============Semana7=================================   
     path("", include("presence.urls")), #sesion activa
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

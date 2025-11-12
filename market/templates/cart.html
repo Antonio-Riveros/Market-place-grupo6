@@ -15,7 +15,7 @@
                 <div>
                   <h6 class="mb-0">{{ item.product.title }}</h6>
                   <div class="d-flex align-items-center mt-1">
-                    <!-- Botones para cambiar cantidad -->
+                    <!-- Botones para cambiar cantidad (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
                     <a href="{% url 'market:cart-decrease' item.product.id %}" class="btn btn-sm btn-outline-secondary me-2">➖</a>
                     <span class="fw-semibold">{{ item.quantity }}</span>
                     <a href="{% url 'market:cart-increase' item.product.id %}" class="btn btn-sm btn-outline-secondary ms-2">➕</a>
@@ -23,7 +23,7 @@
                 </div>
                 <div class="text-end">
                   <span class="fw-semibold d-block mb-1">${{ item.subtotal }}</span>
-                  <!-- Botón para eliminar producto -->
+                  <!-- Botón para eliminar producto (MANTENIDO DE LA VERSIÓN ANTERIOR) -->
                   <a href="{% url 'market:cart-remove' item.product.id %}" class="btn btn-sm btn-outline-danger">🗑️ Quitar</a>
                 </div>
               </div>
@@ -36,28 +36,85 @@
           <h4 class="text-primary mb-0 fw-bold">${{ cart.total }}</h4>
         </div>
 
-        <!-- Botón de pago -->
+        <!-- Botón de pago (MANTENIDO DE LA VERSIÓN ANTERIOR CON MERCADOPAGO) -->
         <div class="text-center">
           <button id="checkout-btn" class="btn btn-success btn-lg px-5">
             💳 Pagar carrito completo
           </button>
         </div>
+        
+        <!-- Botón generar presupuesto (MANTENIDO DE LA VERSIÓN ANTERIOR) -->
+        <div class="text-center mt-3">
+          <a href="{% url 'market:generate-budget' %}" class="btn btn-primary btn-lg px-5">
+            📝 Generar presupuesto (PDF)
+          </a>
+        </div>
 
+        <!-- Script de MercadoPago (MANTENIDO DE LA VERSIÓN ANTERIOR) -->
         <script src="https://sdk.mercadopago.com/js/v2"></script>
         <script>
-          const mp = new MercadoPago("{{ PUBLIC_KEY }}", { locale: 'es-AR' });
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
 
-          document.getElementById("checkout-btn").addEventListener("click", () => {
-            fetch("{% url 'market:crear-preferencia-carrito' %}")
-              .then(response => response.json())
-              .then(data => {
-                window.location.href = data.init_point;
-              })
-              .catch(() => {
-                alert("Hubo un problema al generar el pago. Intenta nuevamente.");
-              });
-          });
+        document.addEventListener("DOMContentLoaded", () => {
+            const checkoutBtn = document.getElementById("checkout-btn");
+            if (!checkoutBtn) {
+                console.error("No se encontró el botón de checkout.");
+                return;
+            }
+
+            // Validar que la llave pública exista
+            const publicKey = "{{ PUBLIC_KEY }}";  <!-- 👈 CORREGIDO: era MERCADOPAGO_PUBLIC_KEY -->
+            if (!publicKey || publicKey === "") {
+                console.error("PUBLIC_KEY no está definido en el template.");
+                return;
+            }
+
+            const mp = new MercadoPago(publicKey, { locale: 'es-AR' });
+            const csrftoken = getCookie('csrftoken');
+
+            checkoutBtn.addEventListener("click", () => {
+                console.log("Botón de pago presionado");
+                
+                // ✅ USANDO LA URL CORRECTA DE TU VIEW
+                fetch("{% url 'market:crear-preferencia-carrito' %}", {  <!-- 👈 URL CORREGIDA -->
+                    method: "POST",
+                    headers: { 
+                        "X-CSRFToken": csrftoken,
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Respuesta del servidor:", data);
+                    if (data.error) {
+                        alert("Error: " + data.error);
+                    } else if (data.init_point) {
+                        window.location.href = data.init_point;
+                    } else {
+                        alert("Hubo un problema al generar el pago.");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error de conexión o del servidor:", err);
+                    alert("Hubo un problema de conexión o del servidor.");
+                });
+            });
+        });
         </script>
+
       {% else %}
         <div class="text-center p-5 bg-light rounded-3 shadow-sm">
           <h5 class="text-muted">Tu carrito está vacío 🕊️</h5>

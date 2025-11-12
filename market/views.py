@@ -232,18 +232,24 @@ def create_preference_cart(request):
 
 
 
+@login_required
 def cart_data(request):
-    cart, _ = Cart.objects.get_or_create(user=request.user)
+    try:
+        cart = Cart.objects.get(user=request.user)
+    except Cart.DoesNotExist:
+        cart = Cart.objects.create(user=request.user)
+    
     items = [{
         "id": item.product.id,
         "title": item.product.title,
-        "price": item.product.price,
+        "price": float(item.product.price),  # Convertir a float para evitar problemas de serialización
         "quantity": item.quantity,
-        "subtotal": item.subtotal()
+        "subtotal": float(item.subtotal())
     } for item in cart.items.all()]
+    
     return JsonResponse({
         "items": items,
-        "total": cart.total()
+        "total": float(cart.total())
     })
       
 @login_required

@@ -138,88 +138,6 @@
   </div>
 </div>
 
-{% block extra_js %}
-<script>
-// Función para obtener el CSRF token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const toastSuccess = new bootstrap.Toast(document.getElementById('toastSuccess'));
-    const toastError = new bootstrap.Toast(document.getElementById('toastError'));
-
-    // --- AGREGAR AL CARRITO - CON PREVENCIÓN DE DUPLICADOS ---
-    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        // Remover event listeners anteriores para evitar duplicados
-        btn.replaceWith(btn.cloneNode(true));
-    });
-
-    // Re-asignar event listeners a los botones nuevos
-    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        btn.addEventListener("click", function handleCartClick(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Si ya está procesando, ignorar clics adicionales
-            if (this.disabled) return;
-            
-            const productId = this.dataset.id;
-            const originalText = this.innerHTML;
-            
-            this.disabled = true;
-            this.innerHTML = "Agregando...";
-            
-            console.log("🛒 Agregando producto:", productId);
-            
-            fetch(`/market/add/${productId}/`, {  // ✅ Usa la URL corregida
-                  method: "POST",
-                  headers: { 
-                      "X-Requested-With": "XMLHttpRequest",
-                      "X-CSRFToken": getCookie("csrftoken")
-                  }
-              })
-            .then(response => response.json())
-            .then(data => {
-    this.innerHTML = originalText;
-    this.disabled = false;
-    
-    if (data.success) {
-        if (data.duplicate) {
-            // Esto ya no debería ocurrir, pero por si acaso
-            console.log("ℹ️ Producto ya en carrito:", data.message);
-        } else {
-            toastSuccess.show();
-            console.log("✅ Producto agregado:", data.product, "Cantidad:", data.quantity);
-        }
-    } else {
-        toastError.show();
-    }
-})
-            .catch((error) => {
-                this.innerHTML = originalText;
-                this.disabled = false;
-                toastError.show();
-                console.error("❌ Error:", error);
-            });
-        });
-    });
-
-    // ... el resto de tu código para modales
-});
-</script>
-
 <style>
 :root {
   --primary: #007bff;
@@ -280,4 +198,116 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 </style>
 {% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+// Función para obtener el CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const toastSuccess = new bootstrap.Toast(document.getElementById('toastSuccess'));
+    const toastError = new bootstrap.Toast(document.getElementById('toastError'));
+
+    // --- AGREGAR AL CARRITO - CON PREVENCIÓN DE DUPLICADOS ---
+    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
+        // Remover event listeners anteriores para evitar duplicados
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    // Re-asignar event listeners a los botones nuevos
+    document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
+        btn.addEventListener("click", function handleCartClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Si ya está procesando, ignorar clics adicionales
+            if (this.disabled) return;
+            
+            const productId = this.dataset.id;
+            const originalText = this.innerHTML;
+            
+            this.disabled = true;
+            this.innerHTML = "Agregando...";
+            
+            console.log("🛒 Agregando producto:", productId);
+            
+            fetch(`/market/add/${productId}/`, {
+                method: "POST",
+                headers: { 
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": getCookie("csrftoken")
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                
+                if (data.success) {
+                    toastSuccess.show();
+                    console.log("✅ Producto agregado:", data.product);
+                    
+                    // 🛒 NOTIFICAR AL CARRITO QUE SE ACTUALICE
+                    const productAddedEvent = new Event('productAddedToCart');
+                    document.dispatchEvent(productAddedEvent);
+                    
+                    // También disparar el evento genérico por si acaso
+                    const cartUpdatedEvent = new Event('cartUpdated');
+                    document.dispatchEvent(cartUpdatedEvent);
+                } else {
+                    toastError.show();
+                }
+            })
+            .catch((error) => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+                toastError.show();
+                console.error("❌ Error:", error);
+            });
+        });
+    });
+
+    // --- MODAL DE ELIMINACIÓN ---
+    const modalEl = document.getElementById('deleteModal');
+    const deleteModal = new bootstrap.Modal(modalEl, {
+        backdrop: true,
+        keyboard: true
+    });
+
+    const modalForm = document.getElementById('deleteModalForm');
+    const titleEl = document.getElementById('deleteModalProductTitle');
+
+    document.querySelectorAll('.js-open-delete-modal').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const deleteUrl = btn.dataset.deleteUrl;
+            const productTitle = btn.dataset.productTitle || 'este producto';
+            titleEl.textContent = productTitle;
+            modalForm.action = deleteUrl;
+            deleteModal.show();
+        });
+    });
+
+    // --- CERRAR MODAL CORRECTAMENTE ---
+    modalEl.addEventListener('hidden.bs.modal', () => {
+        document.body.classList.remove('modal-open');
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+    });
+});
+</script>
 {% endblock %}

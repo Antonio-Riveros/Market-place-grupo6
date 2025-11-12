@@ -38,16 +38,21 @@
 
   <!-- SECCION VENDER -->
   <section id="publicar" class="section vender">
-    <h2>¿Querés vender algo?</h2>
-    <p>Publicá tu producto fácilmente, gestioná consultas y concretá ventas sin complicaciones.</p>
-    <a href="/vender" class="btn-indigo">Publicar producto</a>
+      <h2>¿Querés vender algo?</h2>
+      <p>Publicá tu producto fácilmente, gestioná consultas y concretá ventas sin complicaciones.</p>
+      {% if user.is_authenticated %}
+          <a href="{% url 'market:productcreate' %}" class="btn-indigo">Publicar producto</a>
+      {% else %}
+          <a href="{% url 'account_login' %}" class="btn-indigo">Publicar producto</a>
+      {% endif %}
   </section>
+
 
   <!-- SECCION EXPLORAR -->
   <section id="explorar" class="section explorar">
     <h2>Explorá los productos de otras personas</h2>
     <p>Buscá por categoría o precio. Encontrá lo que necesitás de forma rápida y segura.</p>
-    <a href="/productos" class="btn-purple">Ver productos</a>
+    <a href="{% url 'market:productlist' %}" class="btn-purple">Ver productos</a>
   </section>
 
   <!-- FAQ -->

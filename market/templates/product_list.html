@@ -61,7 +61,7 @@
     </div>
   </div>
 
-  <!-- PRODUCTOS (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
+  <!-- PRODUCTOS -->
   <div class="row g-4">
     {% for product in products %}
     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
@@ -110,7 +110,7 @@
   </div>
 </div>
 
-<!-- Modal único para confirmar eliminación (MANTENIDO DE LA VERSIÓN ANTERIOR) -->
+<!-- Modal y Toasts se mantienen de la versión anterior -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4">
@@ -118,13 +118,11 @@
         <h5 class="modal-title fw-bold" id="deleteModalLabel">⚠️ Confirmar eliminación</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-
       <div class="modal-body text-center py-4">
         <p class="fs-5 text-dark mb-0">
           ¿Estás seguro de que querés eliminar <strong id="deleteModalProductTitle"></strong>?
         </p>
       </div>
-
       <div class="modal-footer justify-content-center border-0 pb-4">
         <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
         <form id="deleteModalForm" method="post" style="display:inline;">
@@ -136,7 +134,6 @@
   </div>
 </div>
 
-<!-- Toasts (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 2000;">
   <div id="toastSuccess" class="toast align-items-center text-bg-success border-0 mb-2" role="alert">
     <div class="d-flex">
@@ -156,7 +153,7 @@
 {% block extra_js %}
 {{ block.super }}
 <script>
-// Función para obtener el token CSRF
+// Función CSRF
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -176,30 +173,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const toastSuccess = new bootstrap.Toast(document.getElementById('toastSuccess'));
     const toastError = new bootstrap.Toast(document.getElementById('toastError'));
 
-    // --- AGREGAR AL CARRITO - VERSIÓN MEJORADA ---
     document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        // Remover event listeners anteriores para evitar duplicados
         btn.replaceWith(btn.cloneNode(true));
     });
 
-    // Re-asignar event listeners a los botones nuevos
     document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        btn.addEventListener("click", function handleCartClick(e) {
+        btn.addEventListener("click", function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
-            // Si ya está procesando, ignorar clics adicionales
             if (this.disabled) return;
-            
             const productId = this.dataset.id;
             const originalText = this.innerHTML;
-            
             this.disabled = true;
             this.innerHTML = "Agregando...";
-            
-            console.log("🛒 Agregando producto:", productId);
-            
-            // ✅ USANDO POST CON CSRF TOKEN
             fetch(`/market/add/${productId}/`, {
                 method: "POST",
                 headers: { 
@@ -211,53 +197,31 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(data => {
                 this.innerHTML = originalText;
                 this.disabled = false;
-                
                 if (data.success) {
                     toastSuccess.show();
-                    console.log("✅ Producto agregado:", data.product);
-                    
-                    // NOTIFICAR AL CARRITO QUE SE ACTUALICE
-                    const productAddedEvent = new Event('productAddedToCart');
-                    document.dispatchEvent(productAddedEvent);
-                    
-                    // También disparar el evento genérico
-                    const cartUpdatedEvent = new Event('cartUpdated');
-                    document.dispatchEvent(cartUpdatedEvent);
-                } else {
-                    toastError.show();
-                }
+                    document.dispatchEvent(new Event('productAddedToCart'));
+                    document.dispatchEvent(new Event('cartUpdated'));
+                } else { toastError.show(); }
             })
-            .catch((error) => {
-                this.innerHTML = originalText;
-                this.disabled = false;
-                toastError.show();
-                console.error("❌ Error:", error);
-            });
+            .catch(() => { this.innerHTML = originalText; this.disabled = false; toastError.show(); });
         });
     });
 
-    // --- MODAL DE ELIMINACIÓN (MANTENIDO DE LA VERSIÓN ANTERIOR) ---
+    // Modal eliminación
     const modalEl = document.getElementById('deleteModal');
-    const deleteModal = new bootstrap.Modal(modalEl, {
-        backdrop: true,
-        keyboard: true
-    });
-
+    const deleteModal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
     const modalForm = document.getElementById('deleteModalForm');
     const titleEl = document.getElementById('deleteModalProductTitle');
 
     document.querySelectorAll('.js-open-delete-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            const deleteUrl = btn.dataset.deleteUrl;
-            const productTitle = btn.dataset.productTitle || 'este producto';
-            titleEl.textContent = productTitle;
-            modalForm.action = deleteUrl;
+            titleEl.textContent = btn.dataset.productTitle || 'este producto';
+            modalForm.action = btn.dataset.deleteUrl;
             deleteModal.show();
         });
     });
 
-    // --- CERRAR MODAL CORRECTAMENTE (MANTENIDO DE LA VERSIÓN ANTERIOR) ---
     modalEl.addEventListener('hidden.bs.modal', () => {
         document.body.classList.remove('modal-open');
         const backdrop = document.querySelector('.modal-backdrop');
@@ -276,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
   --warning: #f8961e;
   --light: #f8f9fa;
   --dark: #212529;
-  --gradient-primary: linear-gradient(135deg, #4361ee, #3a0ca3);
+  --gradient-primary: linear-gradient(180deg, #0056b3, #8b5cf6);
   --gradient-secondary: linear-gradient(135deg, #7209b7, #4361ee);
   --gradient-danger: linear-gradient(135deg, #f72585, #b5179e);
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
@@ -285,115 +249,64 @@ document.addEventListener("DOMContentLoaded", () => {
   --border-radius: 12px;
 }
 
-/* ===== HERO MEJORADO ===== */
+/* HERO */
 .catalog-header {
   background: var(--gradient-primary);
-  border-radius: var(--border-radius);
   box-shadow: var(--shadow-lg);
-  max-width: 900px;
+  max-width: 100vw;
   margin: 0 auto;
   position: relative;
   overflow: hidden;
 }
-
 .catalog-header::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   z-index: 0;
 }
+.catalog-header .header-content { position: relative; z-index: 1; }
+.text-gradient { background: linear-gradient(to right, #ffffff, #e9ecef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.catalog-header p { color: rgba(255,255,255,0.9); }
 
-.catalog-header .header-content {
-  position: relative;
-  z-index: 1;
-}
-
-.text-gradient {
-  background: linear-gradient(to right, #ffffff, #e9ecef);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.catalog-header p {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* ===== FILTROS MEJORADOS ===== */
-.filter-panel {
-  border-radius: var(--border-radius);
-  transition: all 0.3s ease;
-}
-
-.filter-panel:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.filter-panel summary {
-  cursor: pointer;
-  list-style: none;
-  font-size: 1.1rem;
-}
+/* FILTROS */
+.filter-panel { border-radius: var(--border-radius); transition: all 0.3s ease; }
+.filter-panel:hover { box-shadow: var(--shadow-md); }
+.filter-panel summary { cursor: pointer; list-style: none; font-size: 1.1rem; }
 .filter-panel summary::marker { display: none; }
 .filter-panel form { margin-top: 10px; }
 
-/* ===== BOTONES MEJORADOS ===== */
-.btn-primary {
-  background: var(--primary);
-  border: none;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
-}
-
-.btn-success {
-  background: var(--success);
-  border: none;
-}
-
-.btn-danger {
-  background: var(--danger);
-  border: none;
-}
-
-.pulse-animation {
-  animation: pulse 2s infinite;
-}
-
+/* BOTONES */
+.btn-primary { background: var(--primary); border: none; transition: all 0.3s ease; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(67,97,238,0.3); }
+.btn-success { background: var(--success); border: none; }
+.btn-danger { background: var(--danger); border: none; }
+.pulse-animation { animation: pulse 2s infinite; }
 @keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(76, 201, 240, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(76, 201, 240, 0);
-  }
+  0% { box-shadow: 0 0 0 0 rgba(76,201,240,0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(76,201,240,0); }
+  100% { box-shadow: 0 0 0 0 rgba(76,201,240,0); }
 }
 
-/* ===== RESPONSIVE ===== */
+/* PRODUCTOS */
+.product-card { transition: all 0.3s ease; border-radius: 16px; background: #fff; }
+.product-card:hover { transform: translateY(-6px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+.product-img-wrapper { overflow: hidden; border-radius: 16px 16px 0 0; }
+.product-img { height: 220px; width: 100%; object-fit: cover; transition: transform 0.3s ease; }
+.product-card:hover .product-img { transform: scale(1.05); }
+.price-tag { font-size: 1.2rem; color: var(--primary-dark); }
+
+/* MODAL */
+.modal-content { border-radius: 16px; overflow: hidden; }
+.modal-header { background-color: #dc3545 !important; }
+.modal-footer .btn-secondary { background-color: var(--accent); color: #333; border: none; }
+.modal-footer .btn-danger { background-color: #dc3545; border: none; }
+
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  .catalog-header { 
-    padding: 30px 20px; 
-    margin: 0 15px;
-  }
-  
-  .filter-panel { 
-    padding: 15px; 
-  }
-  
-  .text-gradient {
-    font-size: 2rem;
-  }
+  .catalog-header { padding: 30px 20px; }
+  .product-img { height: 180px; }
+  .filter-panel { padding: 15px; }
 }
 </style>
 {% endblock %}

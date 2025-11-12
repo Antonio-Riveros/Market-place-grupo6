@@ -3,51 +3,65 @@
 
 {% block content %}
 <section class="catalog-header text-center py-5 mb-4">
-  <h2 class="fw-bold display-6 text-primary">Catálogo de Productos</h2>
-  <p class="text-muted mt-2">Descubrí lo mejor del Mercadito, todo en un solo lugar</p>
+  <div class="header-content">
+    <h2 class="fw-bold display-6 text-gradient">Catálogo de Productos</h2>
+    <p class="lead mt-2">Descubrí lo mejor del Mercadito, todo en un solo lugar</p>
 
-  {% if user.is_authenticated %}
-  <a href="{% url 'market:productcreate' %}" class="btn btn-success mt-3 px-4 py-2 rounded-pill shadow-sm fw-semibold">
-    + Publicar nuevo producto
-  </a>
-  {% endif %}
+    {% if user.is_authenticated %}
+    <a href="{% url 'market:productcreate' %}" class="btn btn-success mt-3 px-4 py-2 rounded-pill fw-semibold pulse-animation">
+      <i class="bi bi-plus-circle me-2"></i>Publicar nuevo producto
+    </a>
+    {% endif %}
+  </div>
 </section>
 
 <div class="container py-4">
-  <!-- FILTROS (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
-  <details class="filter-panel card shadow-sm border-0 mb-5 p-3 bg-light">
-    <summary class="fw-bold text-primary mb-3">Filtrar productos por:</summary>
-    <form method="get" class="row align-items-center justify-content-center gy-3">
-      <div class="col-md-4 col-sm-6">
-        <label for="category" class="form-label fw-semibold">🏷️ Categoría</label>
-        <select name="category" id="category" class="form-select">
-          <option value="">Todas</option>
-          {% for cat in categories %}
-          <option value="{{ cat }}" {% if request.GET.category == cat %}selected{% endif %}>
-            {{ cat|capfirst }}
-          </option>
-          {% endfor %}
-        </select>
-      </div>
+  <!-- FILTROS MEJORADOS -->
+  <div class="filter-panel card shadow-sm border-0 mb-5 p-3 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-primary mb-0">Filtrar productos</h5>
+      <button class="btn btn-sm btn-outline-primary d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+        <i class="bi bi-funnel"></i> Filtros
+      </button>
+    </div>
+    
+    <div class="collapse d-md-block" id="filterCollapse">
+      <form method="get" class="row align-items-center justify-content-center gy-3">
+        <div class="col-md-4 col-sm-6">
+          <label for="category" class="form-label fw-semibold">
+            <i class="bi bi-tags me-1"></i>Categoría
+          </label>
+          <select name="category" id="category" class="form-select shadow-sm">
+            <option value="">Todas las categorías</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if request.GET.category == cat %}selected{% endif %}>
+              {{ cat|capfirst }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
 
-      <div class="col-md-4 col-sm-6">
-        <label for="order" class="form-label fw-semibold">💲 Ordenar por precio</label>
-        <select name="order" id="order" class="form-select">
-          <option value="">Sin ordenar</option>
-          <option value="asc" {% if request.GET.order == "asc" %}selected{% endif %}>Menor a Mayor</option>
-          <option value="desc" {% if request.GET.order == "desc" %}selected{% endif %}>Mayor a Menor</option>
-        </select>
-      </div>
+        <div class="col-md-4 col-sm-6">
+          <label for="order" class="form-label fw-semibold">
+            <i class="bi bi-sort-numeric-down me-1"></i>Ordenar por precio
+          </label>
+          <select name="order" id="order" class="form-select shadow-sm">
+            <option value="">Sin ordenar</option>
+            <option value="asc" {% if request.GET.order == "asc" %}selected{% endif %}>Menor a Mayor</option>
+            <option value="desc" {% if request.GET.order == "desc" %}selected{% endif %}>Mayor a Menor</option>
+          </select>
+        </div>
 
-      <div class="col-md-2 text-center">
-        <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm mt-3 mt-md-0 fw-semibold">
-          Aplicar
-        </button>
-      </div>
-    </form>
-  </details>
+        <div class="col-md-2 text-center">
+          <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm mt-3 mt-md-0 fw-semibold">
+            <i class="bi bi-check-lg me-1"></i>Aplicar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-  <!-- PRODUCTOS (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
+  <!-- PRODUCTOS -->
   <div class="row g-4">
     {% for product in products %}
     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
@@ -96,7 +110,7 @@
   </div>
 </div>
 
-<!-- Modal único para confirmar eliminación (MANTENIDO DE LA VERSIÓN ANTERIOR) -->
+<!-- Modal y Toasts se mantienen de la versión anterior -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-4">
@@ -104,13 +118,11 @@
         <h5 class="modal-title fw-bold" id="deleteModalLabel">⚠️ Confirmar eliminación</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-
       <div class="modal-body text-center py-4">
         <p class="fs-5 text-dark mb-0">
           ¿Estás seguro de que querés eliminar <strong id="deleteModalProductTitle"></strong>?
         </p>
       </div>
-
       <div class="modal-footer justify-content-center border-0 pb-4">
         <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
         <form id="deleteModalForm" method="post" style="display:inline;">
@@ -122,7 +134,6 @@
   </div>
 </div>
 
-<!-- Toasts (MANTENIDOS DE LA VERSIÓN ANTERIOR) -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 2000;">
   <div id="toastSuccess" class="toast align-items-center text-bg-success border-0 mb-2" role="alert">
     <div class="d-flex">
@@ -138,10 +149,11 @@
   </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
-{{ block.super }}  <!-- 👈 MANTIENE EL JS DEL CARRITO MEJORADO -->
+{{ block.super }}
 <script>
-// Función para obtener el token CSRF (MEJORA NUEVA)
+// Función CSRF
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -161,88 +173,55 @@ document.addEventListener("DOMContentLoaded", () => {
     const toastSuccess = new bootstrap.Toast(document.getElementById('toastSuccess'));
     const toastError = new bootstrap.Toast(document.getElementById('toastError'));
 
-    // --- AGREGAR AL CARRITO - VERSIÓN MEJORADA ---
     document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        // Remover event listeners anteriores para evitar duplicados (MEJORA NUEVA)
         btn.replaceWith(btn.cloneNode(true));
     });
 
-    // Re-asignar event listeners a los botones nuevos
     document.querySelectorAll(".add-to-cart-btn").forEach(btn => {
-        btn.addEventListener("click", function handleCartClick(e) {
+        btn.addEventListener("click", function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
-            // Si ya está procesando, ignorar clics adicionales (MEJORA NUEVA)
             if (this.disabled) return;
-            
             const productId = this.dataset.id;
             const originalText = this.innerHTML;
-            
             this.disabled = true;
             this.innerHTML = "Agregando...";
-            
-            console.log("🛒 Agregando producto:", productId);
-            
-            // ✅ USANDO POST EN LUGAR DE GET (MEJORA DE SEGURIDAD)
             fetch(`/market/add/${productId}/`, {
                 method: "POST",
                 headers: { 
                     "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRFToken": getCookie("csrftoken")  // 👈 CSRF TOKEN AGREGADO
+                    "X-CSRFToken": getCookie("csrftoken")
                 }
             })
             .then(response => response.json())
             .then(data => {
                 this.innerHTML = originalText;
                 this.disabled = false;
-                
                 if (data.success) {
                     toastSuccess.show();
-                    console.log("✅ Producto agregado:", data.product);
-                    
-                    // 🛒 NOTIFICAR AL CARRITO QUE SE ACTUALICE (MEJORA NUEVA)
-                    const productAddedEvent = new Event('productAddedToCart');
-                    document.dispatchEvent(productAddedEvent);
-                    
-                    // También disparar el evento genérico por si acaso
-                    const cartUpdatedEvent = new Event('cartUpdated');
-                    document.dispatchEvent(cartUpdatedEvent);
-                } else {
-                    toastError.show();
-                }
+                    document.dispatchEvent(new Event('productAddedToCart'));
+                    document.dispatchEvent(new Event('cartUpdated'));
+                } else { toastError.show(); }
             })
-            .catch((error) => {
-                this.innerHTML = originalText;
-                this.disabled = false;
-                toastError.show();
-                console.error("❌ Error:", error);
-            });
+            .catch(() => { this.innerHTML = originalText; this.disabled = false; toastError.show(); });
         });
     });
 
-    // --- MODAL DE ELIMINACIÓN (MANTENIDO DE LA VERSIÓN ANTERIOR) ---
+    // Modal eliminación
     const modalEl = document.getElementById('deleteModal');
-    const deleteModal = new bootstrap.Modal(modalEl, {
-        backdrop: true,
-        keyboard: true
-    });
-
+    const deleteModal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
     const modalForm = document.getElementById('deleteModalForm');
     const titleEl = document.getElementById('deleteModalProductTitle');
 
     document.querySelectorAll('.js-open-delete-modal').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            const deleteUrl = btn.dataset.deleteUrl;
-            const productTitle = btn.dataset.productTitle || 'este producto';
-            titleEl.textContent = productTitle;
-            modalForm.action = deleteUrl;
+            titleEl.textContent = btn.dataset.productTitle || 'este producto';
+            modalForm.action = btn.dataset.deleteUrl;
             deleteModal.show();
         });
     });
 
-    // --- CERRAR MODAL CORRECTAMENTE (MANTENIDO DE LA VERSIÓN ANTERIOR) ---
     modalEl.addEventListener('hidden.bs.modal', () => {
         document.body.classList.remove('modal-open');
         const backdrop = document.querySelector('.modal-backdrop');
@@ -253,57 +232,77 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <style>
 :root {
-  --primary: #007bff;
-  --primary-dark: #0056b3;
-  --bg-light: #f5f7fb;
-  --accent: #e8edf3;
+  --primary: #4361ee;
+  --primary-dark: #3a56d4;
+  --secondary: #7209b7;
+  --success: #4cc9f0;
+  --danger: #f72585;
+  --warning: #f8961e;
+  --light: #f8f9fa;
+  --dark: #212529;
+  --gradient-primary: linear-gradient(180deg, #0056b3, #8b5cf6);
+  --gradient-secondary: linear-gradient(135deg, #7209b7, #4361ee);
+  --gradient-danger: linear-gradient(135deg, #f72585, #b5179e);
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --border-radius: 12px;
 }
 
-/* ===== HERO ===== */
+/* HERO */
 .catalog-header {
-  background: linear-gradient(135deg, var(--accent), #f9fbfd);
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  max-width: 900px;
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-lg);
+  max-width: 100vw;
   margin: 0 auto;
+  position: relative;
+  overflow: hidden;
 }
+.catalog-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  z-index: 0;
+}
+.catalog-header .header-content { position: relative; z-index: 1; }
+.text-gradient { background: linear-gradient(to right, #ffffff, #e9ecef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.catalog-header p { color: rgba(255,255,255,0.9); }
 
-/* ===== FILTROS ===== */
-.filter-panel summary {
-  cursor: pointer;
-  list-style: none;
-  font-size: 1.1rem;
-}
+/* FILTROS */
+.filter-panel { border-radius: var(--border-radius); transition: all 0.3s ease; }
+.filter-panel:hover { box-shadow: var(--shadow-md); }
+.filter-panel summary { cursor: pointer; list-style: none; font-size: 1.1rem; }
 .filter-panel summary::marker { display: none; }
 .filter-panel form { margin-top: 10px; }
 
-/* ===== PRODUCTOS ===== */
-.product-card {
-  transition: all 0.3s ease;
-  border-radius: 16px;
-  background: #fff;
+/* BOTONES */
+.btn-primary { background: var(--primary); border: none; transition: all 0.3s ease; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(67,97,238,0.3); }
+.btn-success { background: var(--success); border: none; }
+.btn-danger { background: var(--danger); border: none; }
+.pulse-animation { animation: pulse 2s infinite; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(76,201,240,0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(76,201,240,0); }
+  100% { box-shadow: 0 0 0 0 rgba(76,201,240,0); }
 }
-.product-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-}
+
+/* PRODUCTOS */
+.product-card { transition: all 0.3s ease; border-radius: 16px; background: #fff; }
+.product-card:hover { transform: translateY(-6px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
 .product-img-wrapper { overflow: hidden; border-radius: 16px 16px 0 0; }
-.product-img {
-  height: 220px;
-  width: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
+.product-img { height: 220px; width: 100%; object-fit: cover; transition: transform 0.3s ease; }
 .product-card:hover .product-img { transform: scale(1.05); }
 .price-tag { font-size: 1.2rem; color: var(--primary-dark); }
 
-/* ===== MODAL ===== */
+/* MODAL */
 .modal-content { border-radius: 16px; overflow: hidden; }
 .modal-header { background-color: #dc3545 !important; }
 .modal-footer .btn-secondary { background-color: var(--accent); color: #333; border: none; }
 .modal-footer .btn-danger { background-color: #dc3545; border: none; }
 
-/* ===== RESPONSIVE ===== */
+/* RESPONSIVE */
 @media (max-width: 768px) {
   .catalog-header { padding: 30px 20px; }
   .product-img { height: 180px; }

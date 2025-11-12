@@ -3,42 +3,70 @@
 {% load widget_tweaks %}
 
 {% block content %}
-<div class="signup-container" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f8f9fa; padding: 20px;">
-  <div style="background: white; padding: 30px; border-radius: 10px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-    <h2 style="text-align: center; color: #333; margin-bottom: 10px;">Crear cuenta</h2>
-    <p style="text-align: center; color: #666; font-size: 0.9rem;">Registrate con tu correo o tus redes</p>
+<div class="signup-container"
+     style="display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; background-color: #f8f9fa; padding: 20px;">
+  <div style="background: white; padding: 30px; border-radius: 10px;
+              width: 100%; max-width: 400px;
+              box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+              
+    <h2 style="text-align: center; color: #333; margin-bottom: 10px;">
+      Crear cuenta
+    </h2>
+    <p style="text-align: center; color: #666; font-size: 0.9rem;">
+      Registrate con tu correo o tus redes
+    </p>
 
+    <!-- FORMULARIO PRINCIPAL -->
     <form method="post" style="margin-top: 20px;">
       {% csrf_token %}
 
       <div class="form-group" style="margin-bottom: 15px;">
-        {{ form.username.label_tag }}
-        {{ form.username|add_class:"form-control"|attr:"placeholder:" }}
+        <label for="{{ form.username.id_for_label }}">Nombre de usuario</label>
+        {{ form.username|add_class:"form-control"|attr:"required" }}
       </div>
 
       <div class="form-group" style="margin-bottom: 15px;">
-        {{ form.email.label_tag }}
-        {{ form.email|add_class:"form-control"|attr:"placeholder:" }}
+        <label for="{{ form.email.id_for_label }}">Correo electrónico</label>
+        {{ form.email|add_class:"form-control"|attr:"required" }}
       </div>
 
       <div class="form-group" style="margin-bottom: 15px;">
-        {{ form.password1.label_tag }}
-        {{ form.password1|add_class:"form-control"|attr:"placeholder:" }}
+        <label for="{{ form.password1.id_for_label }}">Contraseña</label>
+        {{ form.password1|add_class:"form-control"|attr:"required" }}
       </div>
 
       <div class="form-group" style="margin-bottom: 15px;">
-        {{ form.password2.label_tag }}
-        {{ form.password2|add_class:"form-control"|attr:"placeholder:" }}
+        <label for="{{ form.password2.id_for_label }}">Confirmar contraseña</label>
+        {{ form.password2|add_class:"form-control"|attr:"required" }}
       </div>
 
-      <button type="submit" class="btn btn-primary w-100" style="width: 100%; background-color: #007bff; border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">
+      <button type="submit" class="btn btn-primary w-100"
+              style="width: 100%; background-color: #007bff; border: none;
+                    color: white; padding: 10px; border-radius: 5px;
+                    cursor: pointer;">
         Registrarse
       </button>
     </form>
 
+    <!-- ERRORES DE FORMULARIO -->
+    {% if form.errors %}
+      <div class="alert alert-danger" style="margin-top: 15px;">
+        {% for field in form %}
+          {% for error in field.errors %}
+            <p>{{ error }}</p>
+          {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     <p style="text-align: center; margin-top: 10px; font-size: 0.9rem;">
       ¿Ya tenés cuenta?
-      <a href="{% url 'account_login' %}" style="color: #007bff; text-decoration: none;">Iniciá sesión</a>
+      <a href="{% url 'account_login' %}"
+         style="color: #007bff; text-decoration: none;">Iniciá sesión</a>
     </p>
 
     <!-- Botones sociales -->
@@ -61,10 +89,11 @@
   </div>
 </div>
 
-<!-- Pequeña animación al pasar el mouse -->
+<!-- Animación hover -->
 <style>
   .btn-social:hover {
     transform: scale(1.1);
   }
 </style>
 {% endblock %}
+

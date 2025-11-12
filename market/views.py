@@ -22,7 +22,7 @@ from xhtml2pdf import pisa
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
-
+from django.views.decorators.http import require_http_methods
 
 def product_list(request):
     products = Product.objects.filter(active=True)
@@ -99,34 +99,45 @@ def product_delete(request, pk):
 
 @login_required
 def add_to_cart(request, product_id):
-    """Agrega un producto al carrito. Soporta AJAX y GET."""
+    """Agrega un producto al carrito."""
     product = get_object_or_404(Product, id=product_id)
-    cart, _ = Cart.objects.get_or_create(user=request.user)
     
-    # Intentar obtener el item existente
+    # ✅ Obtener carrito de forma segura
+    try:
+        cart = Cart.objects.get(user=request.user)
+    except Cart.DoesNotExist:
+        cart = Cart.objects.create(user=request.user)
+    
+    # ✅ Lógica normal del carrito SIN bloqueo por sesión
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-
     if created:
-        # Si es nuevo, arranca con 1
         item.quantity = 1
     else:
-        # Si ya existía, sumar 1
         item.quantity += 1
-
+    
     item.save()
 
-    # Si es solicitud AJAX (fetch)
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.method == "GET":
-        total_items = sum(i.quantity for i in cart.items.all())
-        return JsonResponse({
-            "success": True,
-            "product": product.title,
-            "quantity": item.quantity,
-            "total_items": total_items
-        })
+    # ✅ Debug actualizado
+    print("=" * 50)
+    print(f"🔍 DEBUG add_to_cart")
+    print(f"👤 User: {request.user}")
+    print(f"🛒 Cart ID: {cart.id}")
+    print(f"📦 Product: {product.title} (ID: {product.id})")
+    print(f"📊 New Quantity: {item.quantity}")
+    print(f"📋 All items in cart: {list(cart.items.values_list('product__title', 'quantity'))}")
+    print("=" * 50)
 
-    return redirect("market:view-cart")
-
+    total_items = sum(i.quantity for i in cart.items.all())
+    
+    return JsonResponse({
+        "success": True,
+        "product": product.title,
+        "quantity": item.quantity,
+        "total_items": total_items
+    })
+    
+    
+    
 @login_required
 def cart_increase(request, product_id):
     cart = get_object_or_404(Cart, user=request.user)
@@ -153,6 +164,11 @@ def cart_remove(request, product_id):
     cart = get_object_or_404(Cart, user=request.user)
     item = get_object_or_404(CartItem, cart=cart, product_id=product_id)
     item.delete()
+    
+    # ✅ Debug para verificar eliminación
+    print("🗑️ Producto eliminado del carrito:", product_id)
+    print("📋 Carrito después de eliminar:", list(cart.items.values_list('product__title', 'quantity')))
+    
     return redirect("market:view-cart")
 
 
@@ -165,24 +181,26 @@ def cart_summary(request):
 
 
 
-
-def cart_view(request):
-    cart = Cart.objects.get(user=request.user)
-    return render(request, "market/cart.html", {
-        "cart": cart,
-        "MERCADOPAGO_PUBLIC_KEY": settings.MERCADOPAGO_PUBLIC_KEY
-    })
-
-#VER CARRITO
-
 @login_required
 def view_cart(request):
-    cart, created = Cart.objects.get_or_create(user=request.user)
+    # ✅ Obtener carrito de forma segura
+    try:
+        cart = Cart.objects.get(user=request.user)
+    except Cart.DoesNotExist:
+        cart = Cart.objects.create(user=request.user)
+    
+    # ✅ DEBUG IMPORTANTE
+    print("=" * 50)
+    print(f"🔍 DEBUG view_cart")
+    print(f"👤 User: {request.user}")
+    print(f"🛒 Cart ID: {cart.id}")
+    print(f"📋 Items in cart: {list(cart.items.values_list('product__title', 'quantity'))}")
+    print("=" * 50)
+    
     return render(request, "cart.html", {
         "cart": cart,
         "PUBLIC_KEY": settings.MERCADOPAGO_PUBLIC_KEY
     })
-
 #MERCADO PAGO
 
 @login_required
@@ -268,67 +286,3 @@ def generate_budget(request):
 
     return pdf_response
 
-
-
-# @login_required
-# def crear_preferencia_carrito(request):
-#     # Obtener carrito
-#     cart, _ = Cart.objects.get_or_create(user=request.user)
-
-#     # Validar que haya productos
-#     if not cart.items.exists():
-#         return JsonResponse({"error": "El carrito está vacío."}, status=400)
-
-#     # Preparar items para Mercado Pago y validar precios
-#     items_mp = []
-#     for item in cart.items.all():
-#         if item.product.price is None or item.product.price <= 0:
-#             return JsonResponse({
-#                 "error": f"El producto {item.product.title} tiene un precio inválido."
-#             }, status=400)
-
-#         items_mp.append({
-#             "title": item.product.title,
-#             "quantity": int(item.quantity),
-#             "unit_price": float(item.product.price),
-#             "currency_id": "ARS"
-#         })
-
-#     # Datos de preferencia
-#     preference_data = {
-#         "items": items_mp,
-#         "payer": {"email": "TESTUSER2929@testuser.com"},  # email de sandbox
-#         "back_urls": {
-#             "success": request.build_absolute_uri(reverse('market:payment-success')),
-#             "failure": request.build_absolute_uri(reverse('market:payment-failure')),
-#             "pending": request.build_absolute_uri(reverse('market:payment-pending')),
-#         },
-#         "auto_return": "approved",
-#     }
-
-#     # Inicializar SDK
-#     mp = mercadopago.SDK(settings.MERCADOPAGO_ACCESS_TOKEN)
-
-#     try:
-#         # Crear preferencia
-#         preference_response = mp.preference().create(preference_data)
-
-#         # DEBUG: imprimir respuesta completa
-#         print("🔍 preference_response completo:", preference_response)
-#         print("🔹 items enviados a MP:", items_mp)
-
-#         # Obtener init_point de forma segura
-#         init_point = preference_response.get("response", {}).get("init_point")
-#         if not init_point:
-#             return JsonResponse({
-#                 "error": "No se generó init_point",
-#                 "response": preference_response
-#             }, status=500)
-
-#         # Retornar URL de pago
-#         return JsonResponse({"init_point": init_point})
-
-#     except Exception as e:
-#         # Capturar cualquier error
-#         print("❌ Error creando preferencia:", e)
-#         return JsonResponse({"error": str(e)}, status=500)

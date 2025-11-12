@@ -5,7 +5,15 @@
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <h2 class="mb-4 text-center">🛒 Tu carrito de compras</h2>
+      <h2 class="mb-4 text-center">🛒 Tu carrito de compras - DEBUG</h2>
+
+      <!-- 👇 AGREGAR DEBUG INFO -->
+      <div class="alert alert-info">
+        <strong>Debug Info:</strong><br>
+        Cart ID: {{ cart.id }}<br>
+        User: {{ user.username }}<br>
+        Items count: {{ cart.items.all|length }}
+      </div>
 
       {% if cart.items.all %}
         <div class="card shadow-sm mb-4">
@@ -14,8 +22,8 @@
               <div class="d-flex justify-content-between align-items-center border-bottom py-3">
                 <div>
                   <h6 class="mb-0">{{ item.product.title }}</h6>
+                  <small class="text-muted">Product ID: {{ item.product.id }}</small>
                   <div class="d-flex align-items-center mt-1">
-                    <!-- Botones para cambiar cantidad -->
                     <a href="{% url 'market:cart-decrease' item.product.id %}" class="btn btn-sm btn-outline-secondary me-2">➖</a>
                     <span class="fw-semibold">{{ item.quantity }}</span>
                     <a href="{% url 'market:cart-increase' item.product.id %}" class="btn btn-sm btn-outline-secondary ms-2">➕</a>
@@ -23,7 +31,6 @@
                 </div>
                 <div class="text-end">
                   <span class="fw-semibold d-block mb-1">${{ item.subtotal }}</span>
-                  <!-- Botón para eliminar producto -->
                   <a href="{% url 'market:cart-remove' item.product.id %}" class="btn btn-sm btn-outline-danger">🗑️ Quitar</a>
                 </div>
               </div>
@@ -31,93 +38,12 @@
           </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h5 class="mb-0">Total:</h5>
-          <h4 class="text-primary mb-0 fw-bold">${{ cart.total }}</h4>
-        </div>
-
-        <!-- Botón de pago -->
-        <div class="text-center">
-          <button id="checkout-btn" class="btn btn-success btn-lg px-5">
-            💳 Pagar carrito completo
-          </button>
-        </div>
-        <!-- Botón generar presupuesto -->
-        <div class="text-center mt-3">
-          <a href="{% url 'market:generate-budget' %}" class="btn btn-primary btn-lg px-5">
-            📝 Generar presupuesto (PDF)
-          </a>
-        </div>
-
-        <script src="https://sdk.mercadopago.com/js/v2"></script>
-<script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const checkoutBtn = document.getElementById("checkout-btn");
-    if (!checkoutBtn) {
-        console.error("No se encontró el botón de checkout.");
-        return;
-    }
-
-    // Validar que la llave pública exista
-    const publicKey = "{{ MERCADOPAGO_PUBLIC_KEY }}";
-    if (!publicKey || publicKey === "") {
-        console.error("MERCADOPAGO_PUBLIC_KEY no está definido en el template.");
-        return;
-    }
-
-    const mp = new MercadoPago(publicKey, { locale: 'es-AR' });
-    const csrftoken = getCookie('csrftoken');
-
-    checkoutBtn.addEventListener("click", () => {
-        console.log("Botón de pago presionado");
-        fetch("/api/pagos/crear/", {
-            method: "POST",
-            headers: { 
-                "X-CSRFToken": csrftoken,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                producto: "Compra Mercadito",
-                precio: Number({{ cart.total|floatformat:2|default:"0.00" }})
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Respuesta del servidor:", data);
-            if (data.error) {
-                alert("Error: " + data.error);
-            } else if (data.init_point) {
-                window.location.href = data.init_point;
-            } else {
-                alert("Hubo un problema al generar el pago.");
-            }
-        })
-        .catch(err => {
-            console.error("Error de conexión o del servidor:", err);
-            alert("Hubo un problema de conexión o del servidor.");
-        });
-    });
-});
-</script>
+        <!-- ... resto del código ... -->
 
       {% else %}
         <div class="text-center p-5 bg-light rounded-3 shadow-sm">
-          <h5 class="text-muted">Tu carrito está vacío 🕊️</h5>
+          <h5 class="text-muted">❌ Tu carrito está vacío - PERO los productos SÍ se guardan</h5>
+          <p class="text-danger">Problema de relación entre Cart y CartItem</p>
           <a href="{% url 'market:productlist' %}" class="btn btn-outline-primary mt-3">
             Ver productos
           </a>

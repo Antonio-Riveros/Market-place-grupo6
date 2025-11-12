@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% block title %}{% if user.username == 'AntonioA' or user.is_superuser %}Todas las Publicaciones{% else %}Mis Publicaciones{% endif %} • Mercadito{% endblock %}
+
+{% block content %}
+<section class="my-products-header text-center py-5 mb-4 bg-primary text-white">
+  <div class="container">
+    <h2 class="fw-bold display-6">
+      {% if user.username == 'AntonioA' or user.is_superuser %}
+        🔧 Todas las Publicaciones (Admin)
+      {% else %}
+        Mis Publicaciones
+      {% endif %}
+    </h2>
+    <p class="lead mt-2">
+      {% if user.username == 'AntonioA' or user.is_superuser %}
+        Gestión completa de todas las publicaciones del sistema
+      {% else %}
+        Gestioná tus productos y su visibilidad
+      {% endif %}
+    </p>
+    
+    <div class="d-flex justify-content-center gap-3 mt-4">
+      <a href="{% url 'market:productlist' %}" class="btn btn-outline-light rounded-pill px-4">
+        <i class="bi bi-arrow-left me-2"></i>Volver al Catálogo
+      </a>
+      <a href="{% url 'market:productcreate' %}" class="btn btn-success rounded-pill px-4">
+        <i class="bi bi-plus-circle me-2"></i>Nuevo Producto
+      </a>
+      {% if user.username == 'AntonioA' or user.is_superuser %}
+      <a href="{% url 'market:admin-products' %}" class="btn btn-warning rounded-pill px-4">
+        <i class="bi bi-shield me-2"></i>Panel Admin Completo
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<div class="container py-4">
+  <!-- ALERTA DE PRODUCTOS INACTIVOS -->
+  {% if stats.inactive > 0 %}
+  <div class="alert alert-warning d-flex justify-content-between align-items-center">
+    <div>
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      <strong>
+        {% if user.username == 'AntonioA' or user.is_superuser %}
+          Hay {{ stats.inactive }} producto(s) inactivo(s) en el sistema
+        {% else %}
+          Tenés {{ stats.inactive }} producto(s) inactivo(s)
+        {% endif %}
+      </strong>
+      - No son visibles en el catálogo público.
+    </div>
+    <a href="{% url 'market:reactivate-all' %}" class="btn btn-warning btn-sm">
+      <i class="bi bi-arrow-clockwise me-1"></i>Reactivar Todos
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- PANEL DE ESTADÍSTICAS Y FILTROS -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h5 class="fw-bold mb-3">
+            {% if user.username == 'AntonioA' or user.is_superuser %}
+              Resumen General
+            {% else %}
+              Resumen de Publicaciones
+            {% endif %}
+          </h5>
+          <div class="d-flex gap-4">
+            <div class="text-center">
+              <span class="badge bg-primary fs-6">{{ stats.total }}</span>
+              <small class="d-block text-muted mt-1">Total</small>
+            </div>
+            <div class="text-center">
+              <span class="badge bg-success fs-6">{{ stats.active }}</span>
+              <small class="d-block text-muted mt-1">Activos</small>
+            </div>
+            <div class="text-center">
+              <span class="badge bg-secondary fs-6">{{ stats.inactive }}</span>
+              <small class="d-block text-muted mt-1">Inactivos</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <form method="get" class="d-flex gap-2">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+              <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Todos los estados</option>
+              <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Solo activos</option>
+              <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Solo inactivos</option>
+            </select>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTA DE PRODUCTOS -->
+  <div class="row g-4">
+    {% for product in products %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+      <div class="card h-100 border-0 shadow-sm product-card position-relative">
+        <!-- BADGE DE ESTADO -->
+        <div class="position-absolute top-0 start-0 m-2">
+          {% if product.active %}
+          <span class="badge bg-success">🟢 Activo</span>
+          {% else %}
+          <span class="badge bg-secondary">⚫ Inactivo</span>
+          {% endif %}
+        </div>
+
+        <!-- BADGE DE VENDEDOR PARA ADMIN -->
+        {% if user.username == 'AntonioA' or user.is_superuser %}
+        <div class="position-absolute top-0 end-0 m-2">
+          <span class="badge bg-dark" title="Vendedor: {{ product.seller.username }}">
+            {% if product.seller.get_full_name %}
+              {{ product.seller.get_full_name|truncatechars:10 }}
+            {% else %}
+              {{ product.seller.username|truncatechars:10 }}
+            {% endif %}
+          </span>
+        </div>
+        {% endif %}
+
+        <!-- MANEJO SEGURO DE IMÁGENES -->
+        {% if product.image and product.image.url %}
+        <div class="product-img-wrapper">
+          <img src="{{ product.image.url }}" class="card-img-top product-img" alt="{{ product.title }}"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div class="bg-secondary text-white text-center py-5 rounded-top" style="display:none;">
+            <i class="bi bi-box-seam fs-1"></i>
+            <p class="small mt-2">Imagen no disponible</p>
+          </div>
+        </div>
+        {% else %}
+        <div class="bg-secondary text-white text-center py-5 rounded-top">
+          <i class="bi bi-box-seam fs-1"></i>
+          <p class="small mt-2">Sin imagen</p>
+        </div>
+        {% endif %}
+
+        <div class="card-body text-center d-flex flex-column">
+          <h5 class="card-title fw-bold text-dark mb-2">{{ product.title }}</h5>
+          <p class="text-muted small flex-grow-1">{{ product.description|truncatewords:12 }}</p>
+          
+          <!-- INFO ADICIONAL PARA ADMIN -->
+          {% if user.username == 'AntonioA' or user.is_superuser %}
+          <div class="seller-info mb-2 p-2 bg-light rounded small">
+            <div class="d-flex justify-content-between">
+              <span><strong>Vendedor:</strong> {{ product.seller.username }}</span>
+              {% if product.seller.get_full_name %}
+              <span><strong>Nombre:</strong> {{ product.seller.get_full_name }}</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          <p class="fs-5 fw-bold text-success mb-3">${{ product.price }}</p>
+
+          <!-- BOTONES DE GESTIÓN -->
+          <div class="d-flex flex-column gap-2">
+            {% if user.username == 'AntonioA' or user.is_superuser or user == product.seller %}
+              {% if product.active %}
+              <button class="btn btn-warning btn-sm js-toggle-status" 
+                      data-product-id="{{ product.id }}" 
+                      data-new-status="inactive">
+                <i class="bi bi-pause-circle me-1"></i>Desactivar
+              </button>
+              {% else %}
+              <button class="btn btn-success btn-sm js-toggle-status" 
+                      data-product-id="{{ product.id }}" 
+                      data-new-status="active">
+                <i class="bi bi-play-circle me-1"></i>Activar
+              </button>
+              {% endif %}
+            {% endif %}
+
+            <!-- BOTONES DE EDICIÓN Y ELIMINACIÓN PARA ADMIN O PROPIETARIO -->
+            {% if user.username == 'AntonioA' or user.is_superuser or user == product.seller %}
+            <div class="d-flex justify-content-center gap-1">
+              <a href="{% url 'market:product-edit' product.id %}" class="btn btn-outline-primary btn-sm rounded-pill px-3" 
+                 title="{% if user.username == 'AntonioA' and user != product.seller %}Editar como administrador{% else %}Editar producto{% endif %}">
+                ✏️
+              </a>
+              <button class="btn btn-outline-danger btn-sm rounded-pill px-3 js-open-delete-modal"
+                      data-delete-url="{% url 'market:product-delete' product.id %}"
+                      data-product-title="{{ product.title|escapejs }}"
+                      title="{% if user.username == 'AntonioA' and user != product.seller %}Eliminar como administrador{% else %}Eliminar producto{% endif %}">
+                🗑️
+              </button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-inbox display-1 text-muted"></i>
+      <p class="text-muted mt-3 fs-5">
+        {% if user.username == 'AntonioA' or user.is_superuser %}
+          No hay publicaciones{% if status_filter != 'all' %} con este estado{% endif %} en el sistema.
+        {% else %}
+          No tenés publicaciones{% if status_filter != 'all' %} con este estado{% endif %}.
+        {% endif %}
+      </p>
+      {% if status_filter != 'all' %}
+      <a href="?status=all" class="btn btn-primary">Ver todas las publicaciones</a>
+      {% else %}
+      <a href="{% url 'market:productcreate' %}" class="btn btn-success">Crear primera publicación</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modal de eliminación -->
+<!-- Modal de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-danger text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="deleteModalLabel">
+          {% if user.username == 'AntonioA' or user.is_superuser %}
+            🗑️ Eliminación Permanente
+          {% else %}
+            ⚠️ Confirmar eliminación
+          {% endif %}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <p class="fs-5 text-dark mb-0">
+          ¿Estás seguro de que querés eliminar <strong id="deleteModalProductTitle"></strong>?
+        </p>
+        
+        {% if user.username == 'AntonioA' or user.is_superuser %}
+        <div class="alert alert-warning mt-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong>ACCIÓN IRREVERSIBLE:</strong> Este producto será eliminado permanentemente de la base de datos.
+        </div>
+        {% else %}
+        <small class="text-muted">El producto se marcará como inactivo y no será visible en el catálogo.</small>
+        {% endif %}
+      </div>
+      <div class="modal-footer justify-content-center border-0 pb-4">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+        <form id="deleteModalForm" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger rounded-pill px-4">
+            {% if user.username == 'AntonioA' or user.is_superuser %}
+              🗑️ Eliminar Permanentemente
+            {% else %}
+              Eliminar
+            {% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Cambio de estado individual
+    document.querySelectorAll('.js-toggle-status').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const newStatus = this.dataset.newStatus;
+            
+            fetch(`/market/toggle-status/${productId}/`, {
+                method: "POST",
+                headers: { 
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: new URLSearchParams({
+                    'status': newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Recargar para ver cambios
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cambiar el estado del producto');
+            });
+        });
+    });
+
+    // Modal de eliminación
+    const modalEl = document.getElementById('deleteModal');
+    const deleteModal = new bootstrap.Modal(modalEl, { backdrop: true, keyboard: true });
+    const modalForm = document.getElementById('deleteModalForm');
+    const titleEl = document.getElementById('deleteModalProductTitle');
+
+    document.querySelectorAll('.js-open-delete-modal').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            titleEl.textContent = btn.dataset.productTitle || 'este producto';
+            modalForm.action = btn.dataset.deleteUrl;
+            deleteModal.show();
+        });
+    });
+
+    // Función CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+
+<style>
+.my-products-header {
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.product-card {
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.badge {
+  font-size: 0.7rem;
+  z-index: 10;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.seller-info {
+  border-left: 3px solid #6c757d;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  font-size: 0.75rem;
+}
+</style>
+{% endblock %}

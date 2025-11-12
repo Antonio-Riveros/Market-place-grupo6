@@ -23,9 +23,14 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
+from django.db.models import Q
+from django.contrib import messages
+
 
 def product_list(request):
-    products = Product.objects.filter(active=True)
+    # Solo mostrar productos activos en el catálogo general
+    # Usamos select_related para optimizar la consulta del vendedor
+    products = Product.objects.filter(active=True).select_related('seller')
 
     # Obtener parámetros del GET
     category = request.GET.get('category')
@@ -41,21 +46,123 @@ def product_list(request):
     elif order == "desc":
         products = products.order_by('-price')
     else:
-        products = products.order_by("-created_at")  # Default: recientes primero
+        products = products.order_by("-created_at")
 
     # Obtener todas las categorías para el dropdown
     categories = Product.objects.values_list('category', flat=True).distinct()
+
+    # Verificar si el usuario tiene productos inactivos
+    has_inactive_products = False
+    if request.user.is_authenticated:
+        has_inactive_products = Product.objects.filter(
+            seller=request.user, 
+            active=False
+        ).exists()
 
     return render(
         request,
         "product_list.html",
         {
             "products": products,
-            "categories": categories
+            "categories": categories,
+            "has_inactive_products": has_inactive_products
         }
     )
 
-#CREAR PRODUCTO 
+# VISTA MIS PUBLICACIONES
+@login_required
+def my_products(request):
+    status_filter = request.GET.get('status', 'all')
+    
+    # ✅ SI ES ADMIN, MOSTRAR TODOS LOS PRODUCTOS
+    if request.user.username == 'AntonioA' or request.user.is_superuser:
+        products = Product.objects.all()
+    else:
+        # Usuario normal solo ve sus productos
+        products = Product.objects.filter(seller=request.user)
+    
+    # Aplicar filtro de estado
+    if status_filter == 'active':
+        products = products.filter(active=True)
+    elif status_filter == 'inactive':
+        products = products.filter(active=False)
+    
+    # ✅ ESTADÍSTICAS DIFERENTES PARA ADMIN
+    if request.user.username == 'AntonioA' or request.user.is_superuser:
+        stats = {
+            'total': Product.objects.count(),
+            'active': Product.objects.filter(active=True).count(),
+            'inactive': Product.objects.filter(active=False).count(),
+        }
+    else:
+        stats = {
+            'total': Product.objects.filter(seller=request.user).count(),
+            'active': Product.objects.filter(seller=request.user, active=True).count(),
+            'inactive': Product.objects.filter(seller=request.user, active=False).count(),
+        }
+    
+    return render(request, "my_products.html", {
+        "products": products.order_by('-created_at'),
+        "status_filter": status_filter,
+        "stats": stats
+    })
+
+# CAMBIAR ESTADO INDIVIDUAL
+@login_required
+def product_toggle_status(request, pk):
+    product = get_object_or_404(Product, pk=pk, seller=request.user)
+    
+    if request.method == "POST":
+        new_status = request.POST.get('status')
+        # Convertir status a boolean para el campo active
+        if new_status == 'active':
+            product.active = True
+        elif new_status == 'inactive':
+            product.active = False
+        
+        product.save()
+        
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'new_status': 'active' if product.active else 'inactive',
+                'product_id': product.id
+            })
+    
+    return redirect("market:my-products")
+
+# REACTIVACIÓN MASIVA MEJORADA
+@login_required
+def reactivate_all_inactive(request):
+    if request.method == "POST":
+        # Obtener los productos seleccionados del formulario
+        products_to_reactivate = request.POST.getlist('products_to_reactivate')
+        
+        if products_to_reactivate:
+            # Reactivar solo los productos seleccionados
+            updated = Product.objects.filter(
+                seller=request.user, 
+                active=False,
+                id__in=products_to_reactivate
+            ).update(active=True)
+            
+            messages.success(request, f'✅ Se reactivaron {updated} productos correctamente.')
+        else:
+            messages.warning(request, '⚠️ No seleccionaste ningún producto para reactivar.')
+        
+        return redirect("market:my-products")
+    
+    # GET - Mostrar confirmación con checkboxes
+    inactive_products = Product.objects.filter(
+        seller=request.user, 
+        active=False
+    )
+    
+    return render(request, "reactivate_confirm.html", {
+        "inactive_products": inactive_products
+    })
+
+# CREAR PRODUCTO 
 @login_required
 def product_create(request):
     if request.method == "POST":
@@ -63,48 +170,125 @@ def product_create(request):
         if form.is_valid():
             product = form.save(commit=False)
             product.seller = request.user
+            product.active = True  # Nuevo producto siempre activo
             product.save()
-            return redirect("market:productlist")
+            return redirect("market:my-products")
     else:
         form = ProductForm()
     return render(request, "product_form.html", {"form": form})
 
-#EDITAR PRODUCTO 
+# EDITAR PRODUCTO (con permisos de admin)
 @login_required
 def product_edit(request, pk):
-    product = get_object_or_404(Product, pk=pk, seller=request.user)
+    # Verificar si el usuario es admin o el vendedor
+    if request.user.username == 'AntonioA' or request.user.is_superuser:
+        # Admin puede editar cualquier producto
+        product = get_object_or_404(Product, pk=pk)
+    else:
+        # Usuario normal solo puede editar sus productos
+        product = get_object_or_404(Product, pk=pk, seller=request.user)
+    
     if request.method == "POST":
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
-            return redirect("market:productlist")
+            
+            # Mensaje diferente para admin
+            if request.user.username == 'AntonioA' and product.seller != request.user:
+                messages.success(request, f'✅ Producto editado (como administrador)')
+            else:
+                messages.success(request, f'✅ Producto editado correctamente')
+                
+            return redirect("market:my-products")
     else:
         form = ProductForm(instance=product)
-    return render(request, "product_form.html", {"form": form})
+    return render(request, "product_form.html", {"form": product})
 
-#ELIMINAR PRODUCTO
+# Función helper para eliminar archivos de imagen
+def delete_product_image(product):
+    """Elimina el archivo de imagen del filesystem si existe"""
+    if product.image:
+        try:
+            image_path = os.path.join(settings.MEDIA_ROOT, str(product.image))
+            if os.path.isfile(image_path):
+                os.remove(image_path)
+                print(f"✅ Imagen eliminada: {image_path}")
+        except Exception as e:
+            print(f"❌ Error eliminando imagen: {e}")
+
+# Y actualizar la función product_delete:
 @login_required
 def product_delete(request, pk):
-    product = get_object_or_404(Product, pk=pk, seller=request.user)
+    if request.user.username == 'AntonioA' or request.user.is_superuser:
+        product = get_object_or_404(Product, pk=pk)
+        is_admin_action = True
+    else:
+        product = get_object_or_404(Product, pk=pk, seller=request.user)
+        is_admin_action = False
+    
     if request.method == "POST":
-        product.active = False
-        product.save()
+        if is_admin_action:
+            # ✅ ELIMINACIÓN COMPLETA para admin
+            product_title = product.title
+            # Primero eliminar la imagen del filesystem
+            delete_product_image(product)
+            # Luego eliminar el producto de la base de datos
+            product.delete()
+            messages.success(request, f'🗑️ Producto "{product_title}" eliminado permanentemente')
+        else:
+            product.active = False
+            product.save()
+            messages.success(request, f'✅ Producto "{product.title}" marcado como inactivo')
+            
+        return redirect("market:my-products")
+    
+    return render(request, "product_confirm_delete.html", {
+        "product": product,
+        "is_admin_action": is_admin_action
+    })
+@login_required
+def admin_products(request):
+    # Solo accesible para AntonioA o superusers
+    if request.user.username != 'AntonioA' and not request.user.is_superuser:
+        messages.error(request, '❌ No tienes permisos para acceder a esta página')
         return redirect("market:productlist")
-    return render(request, "product_confirm_delete.html", {"product": product})
+    
+    products = Product.objects.all().order_by('-created_at')
+    
+    # Filtros para admin
+    status_filter = request.GET.get('status', 'all')
+    if status_filter == 'active':
+        products = products.filter(active=True)
+    elif status_filter == 'inactive':
+        products = products.filter(active=False)
+    
+    return render(request, "admin_products.html", {
+        "products": products,
+        "status_filter": status_filter,
+        "total_products": Product.objects.count(),
+        "active_products": Product.objects.filter(active=True).count(),
+        "inactive_products": Product.objects.filter(active=False).count(),
+    })
 
-#AGREGAR AL CARRITO - VERSIÓN MEJORADA
+
+# AGREGAR AL CARRITO - MEJORADO PARA VERIFICAR ESTADO
 @login_required
 def add_to_cart(request, product_id):
     """Agrega un producto al carrito."""
     product = get_object_or_404(Product, id=product_id)
     
-    # ✅ MEJORA: Obtener carrito de forma segura para OneToOneField
+    # ✅ VERIFICAR que el producto esté activo
+    if not product.is_available():
+        return JsonResponse({
+            "success": False,
+            "error": "Este producto no está disponible actualmente."
+        })
+    
     try:
         cart = Cart.objects.get(user=request.user)
     except Cart.DoesNotExist:
         cart = Cart.objects.create(user=request.user)
     
-    # Lógica normal del carrito
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
     if created:
         item.quantity = 1
@@ -113,19 +297,8 @@ def add_to_cart(request, product_id):
     
     item.save()
 
-    # ✅ MEJORA: Debug mejorado
-    print("=" * 50)
-    print(f"🔍 DEBUG add_to_cart")
-    print(f"👤 User: {request.user}")
-    print(f"🛒 Cart ID: {cart.id}")
-    print(f"📦 Product: {product.title} (ID: {product.id})")
-    print(f"📊 New Quantity: {item.quantity}")
-    print(f"📋 All items in cart: {list(cart.items.values_list('product__title', 'quantity'))}")
-    print("=" * 50)
-
     total_items = sum(i.quantity for i in cart.items.all())
     
-    # ✅ MEJORA: Siempre responder JSON para AJAX (más limpio)
     return JsonResponse({
         "success": True,
         "product": product.title,

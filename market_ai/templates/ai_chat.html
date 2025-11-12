@@ -1,213 +1,702 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2 class="chat-title">SugerIAs para ayudarte!</h2>
-
-<div class="chat-container">
-  <div class="chat-box" id="chatBox">
-    {% if history %}
-      {% for turn in history %}
-        <div class="message user-message">
-          <span class="sender">🧍‍♀️ Tú</span>
-          <span class="text">{{ turn.user }}</span>
-        </div>
-        <div class="message ai-message">
-          <span class="sender">🤖 Asistente</span>
-          <span class="text">{{ turn.ai }}</span>
-        </div>
-      {% endfor %}
-    {% else %}
-      <p class="no-messages">El chat está vacío. ¡Escribí algo para comenzar! 🗨️</p>
-    {% endif %}
+<div class="ai-chat-container">
+  <!-- Header del chat -->
+  <div class="chat-header">
+    <div class="chat-avatar">
+      <i class="fas fa-robot"></i>
+    </div>
+    <div class="chat-info">
+      <h2 class="chat-title">SugerIAs 🤖</h2>
+      <p class="chat-subtitle">Tu asistente inteligente para lo que necesites</p>
+      <div class="chat-status">
+        <span class="status-dot online"></span>
+        <span class="status-text">En línea - Listo para ayudarte</span>
+      </div>
+    </div>
+    <div class="chat-actions">
+      <button class="btn-action" title="Nueva conversación" onclick="location.reload()">
+        <i class="fas fa-plus"></i>
+      </button>
+      <button class="btn-action" title="Sugerencias rápidas" id="suggestionsBtn">
+        <i class="fas fa-lightbulb"></i>
+      </button>
+    </div>
   </div>
 
-  <form method="post" class="chat-form">
-    {% csrf_token %}
-    <div class="input-container">
-      <textarea id="chatInput" name="message" rows="1" placeholder="Escribí tu mensaje..." required></textarea>
-      <button type="submit" class="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
-      <button type="submit" name="clear_chat" class="btn-clear"><i class="fa-solid fa-trash"></i></button>
+  <!-- Sugerencias rápidas -->
+  <div class="suggestions-container" id="suggestionsContainer">
+    <div class="suggestions-header">
+      <h4>💡 ¿No sabés por dónde empezar?</h4>
+      <button class="btn-close-suggestions" id="closeSuggestions">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
-  </form>
+    <div class="suggestions-grid">
+      <button class="suggestion-chip" data-prompt="¿Podés ayudarme a escribir una descripción atractiva para mi producto?">
+        📝 Descripción de producto
+      </button>
+      <button class="suggestion-chip" data-prompt="Necesito ideas creativas para promocionar mis productos en redes sociales">
+        💡 Ideas de marketing
+      </button>
+      <button class="suggestion-chip" data-prompt="¿Cómo puedo mejorar el precio de mis productos para ser más competitivo?">
+        💰 Estrategia de precios
+      </button>
+      <button class="suggestion-chip" data-prompt="Ayudame a crear un mensaje atractivo para mis clientes">
+        ✉️ Mensajes a clientes
+      </button>
+    </div>
+  </div>
+
+  <!-- Área de chat -->
+  <div class="chat-main">
+    <div class="chat-box" id="chatBox">
+      {% if history %}
+        {% for turn in history %}
+          <div class="message user-message">
+            <div class="message-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="message-content">
+              <div class="message-sender">Tú</div>
+              <div class="message-text">{{ turn.user }}</div>
+              <div class="message-time">{{ now|date:"H:i" }}</div>
+            </div>
+          </div>
+          <div class="message ai-message">
+            <div class="message-avatar">
+              <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-content">
+              <div class="message-sender">SugerIAs</div>
+              <div class="message-text">{{ turn.ai }}</div>
+              <div class="message-time">{{ now|date:"H:i" }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="welcome-message">
+          <div class="welcome-icon">
+            <i class="fas fa-comments"></i>
+          </div>
+          <h3>¡Hola! Soy tu SugerIA</h3>
+          <p>Estoy aquí para ayudarte con ideas, descripciones, estrategias y mucho más. ¿En qué puedo asistirte hoy?</p>
+          <div class="welcome-features">
+            <div class="feature">
+              <i class="fas fa-bullhorn"></i>
+              <span>Marketing</span>
+            </div>
+            <div class="feature">
+              <i class="fas fa-edit"></i>
+              <span>Redacción</span>
+            </div>
+            <div class="feature">
+              <i class="fas fa-chart-line"></i>
+              <span>Estrategias</span>
+            </div>
+            <div class="feature">
+              <i class="fas fa-lightbulb"></i>
+              <span>Ideas</span>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Formulario de chat -->
+    <form method="post" class="chat-form">
+      {% csrf_token %}
+      <div class="input-container">
+        <div class="input-actions">
+          <button type="button" class="btn-attach" title="Adjuntar archivo">
+            <i class="fas fa-paperclip"></i>
+          </button>
+        </div>
+        <textarea id="chatInput" name="message" rows="1" placeholder="Escribí tu mensaje a la IA..." required></textarea>
+        <div class="send-actions">
+          <button type="submit" name="clear_chat" class="btn-clear" title="Limpiar chat">
+            <i class="fas fa-trash"></i>
+          </button>
+          <button type="submit" class="btn-send" title="Enviar mensaje">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+      <div class="chat-footer">
+        <span class="chat-tip">
+          <i class="fas fa-info-circle"></i>
+          SugerIAs puede cometer errores. Verifica la información importante.
+        </span>
+      </div>
+    </form>
+  </div>
 </div>
 
 <style>
-/* ======= Estilos del Chat ======= */
-.chat-title {
-  text-align: center;
-  margin: 30px 0 20px;
-  color: var(--primary-dark);
-  font-weight: 700;
-  font-size: 1.6rem;
-  letter-spacing: 0.5px;
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.ai-chat-container {
+  max-width: 900px;
+  margin: 20px auto;
+  background: var(--white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
 }
 
-.chat-container {
-  max-width: 800px;
-  margin: 0 auto;
+/* ===== HEADER DEL CHAT ===== */
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 25px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  gap: 15px;
+}
+
+.chat-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.chat-info {
+  flex: 1;
+}
+
+.chat-title {
+  margin: 0 0 5px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.chat-subtitle {
+  margin: 0 0 8px 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.chat-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+.status-text {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-action:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* ===== SUGERENCIAS RÁPIDAS ===== */
+.suggestions-container {
+  background: var(--light);
+  padding: 20px;
+  border-bottom: 1px solid #e9ecef;
+  display: none;
+}
+
+.suggestions-container.show {
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.suggestions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.suggestions-header h4 {
+  margin: 0;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.btn-close-suggestions {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-close-suggestions:hover {
+  background: var(--background);
+  color: var(--danger);
+}
+
+.suggestions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+}
+
+.suggestion-chip {
+  background: var(--white);
+  border: 1px solid #e9ecef;
+  border-radius: 20px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.suggestion-chip:hover {
+  background: var(--primary);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--primary);
+}
+
+/* ===== ÁREA PRINCIPAL DEL CHAT ===== */
+.chat-main {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--white);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  padding: 20px;
+  height: 600px;
 }
 
 .chat-box {
-  border: 1px solid #dee2e6;
-  border-radius: 12px;
+  flex: 1;
   padding: 20px;
-  height: 450px;
   overflow-y: auto;
   background: var(--background);
-  scroll-behavior: smooth;
-}
-
-/* ======= Mensajes ======= */
-.message {
   display: flex;
   flex-direction: column;
-  margin-bottom: 12px;
-  max-width: 80%;
-  padding: 12px 16px;
-  border-radius: 16px;
-  word-wrap: break-word;
-  line-height: 1.4;
-  font-size: 0.95rem;
-  animation: fadeIn 0.3s ease;
+  gap: 15px;
 }
 
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(5px);}
-  to {opacity: 1; transform: translateY(0);}
+/* ===== MENSAJES ===== */
+.message {
+  display: flex;
+  gap: 12px;
+  max-width: 80%;
+  animation: messageAppear 0.3s ease;
+}
+
+@keyframes messageAppear {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .user-message {
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  color: var(--white);
   align-self: flex-end;
-  border-bottom-right-radius: 4px;
+  flex-direction: row-reverse;
 }
 
 .ai-message {
-  background: #e8edf3;
-  color: var(--text-main);
   align-self: flex-start;
-  border-bottom-left-radius: 4px;
 }
 
-.sender {
+.message-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.user-message .message-avatar {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.ai-message .message-avatar {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.message-content {
+  background: var(--white);
+  padding: 12px 16px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  max-width: 100%;
+}
+
+.user-message .message-content {
+  background: var(--primary);
+  color: var(--white);
+  border-bottom-right-radius: 4px;
+}
+
+.ai-message .message-content {
+  border-bottom-left-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.message-sender {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   margin-bottom: 4px;
   opacity: 0.8;
 }
 
-/* ======= Formulario ======= */
-.chat-form {
+.message-text {
+  line-height: 1.4;
+  font-size: 0.95rem;
+  word-wrap: break-word;
+}
+
+.message-time {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-top: 5px;
+  text-align: right;
+}
+
+/* ===== MENSAJE DE BIENVENIDA ===== */
+.welcome-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+}
+
+.welcome-icon {
+  font-size: 3rem;
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+
+.welcome-message h3 {
+  color: var(--text-main);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-top: 30px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.feature {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+  padding: 15px;
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.feature i {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+.feature span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* ===== FORMULARIO DE CHAT ===== */
+.chat-form {
+  border-top: 1px solid #e9ecef;
+  background: var(--white);
+  padding: 20px;
 }
 
 .input-container {
   display: flex;
+  align-items: flex-end;
   gap: 10px;
-  width: 100%;
+  margin-bottom: 10px;
+}
+
+.input-actions, .send-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-attach, .btn-clear, .btn-send {
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.btn-attach {
+  background: var(--light);
+  color: var(--text-light);
+}
+
+.btn-attach:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.btn-clear {
+  background: var(--light);
+  color: var(--text-light);
+}
+
+.btn-clear:hover {
+  background: var(--danger);
+  color: var(--white);
+}
+
+.btn-send {
+  background: var(--primary);
+  color: var(--white);
+}
+
+.btn-send:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
 }
 
 textarea#chatInput {
   flex: 1;
-  padding: 12px 15px;
+  padding: 12px 16px;
+  border: 1px solid #e9ecef;
   border-radius: 20px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
   resize: none;
-  overflow: hidden;
-  transition: all 0.2s;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 0.95rem;
+  font-family: inherit;
+  line-height: 1.4;
+  max-height: 120px;
+  transition: all 0.3s ease;
 }
 
 textarea#chatInput:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 5px rgba(0,123,255,0.3);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
 }
 
-/* Botones */
-.btn-send, .btn-clear {
-  border: none;
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  cursor: pointer;
-  font-size: 1.1rem;
+.chat-footer {
+  text-align: center;
+}
+
+.chat-tip {
+  font-size: 0.8rem;
+  color: var(--text-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s, background 0.3s;
+  gap: 5px;
 }
 
-.btn-send {
-  background-color: var(--primary);
-  color: var(--white);
-}
-
-.btn-send:hover {
-  background-color: var(--primary-dark);
-  transform: scale(1.05);
-}
-
-.btn-clear {
-  background-color: #dc3545;
-  color: var(--white);
-}
-
-.btn-clear:hover {
-  background-color: #b02a37;
-  transform: scale(1.05);
-}
-
-/* ======= Sin mensajes ======= */
-.no-messages {
-  text-align: center;
-  color: var(--text-light);
-  margin-top: 35%;
-  font-style: italic;
-}
-
-/* ======= Responsivo ======= */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .chat-container {
-    padding: 15px;
+  .ai-chat-container {
+    margin: 10px;
+    border-radius: var(--border-radius);
   }
-
-  .chat-box {
-    height: 400px;
+  
+  .chat-header {
+    padding: 15px 20px;
   }
+  
+  .chat-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+  
+  .chat-title {
+    font-size: 1.3rem;
+  }
+  
+  .chat-main {
+    height: 500px;
+  }
+  
+  .message {
+    max-width: 90%;
+  }
+  
+  .suggestions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .welcome-features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
-  .btn-send, .btn-clear {
-    width: 40px;
-    height: 40px;
+@media (max-width: 480px) {
+  .chat-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .chat-actions {
+    margin-top: 10px;
+  }
+  
+  .message {
+    max-width: 95%;
+  }
+  
+  .message-content {
+    padding: 10px 12px;
+  }
+  
+  .input-container {
+    flex-wrap: wrap;
+  }
+  
+  .input-actions, .send-actions {
+    order: 2;
+  }
+  
+  .input-actions {
+    margin-right: auto;
   }
 }
 </style>
 
 <script>
-// Auto-scroll al final del chat
-const chatBox = document.getElementById('chatBox');
-if (chatBox) {
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-// Auto-expand textarea
-const chatInput = document.getElementById('chatInput');
-chatInput.addEventListener('input', e => {
-  chatInput.style.height = 'auto';
-  chatInput.style.height = chatInput.scrollHeight + 'px';
+document.addEventListener('DOMContentLoaded', function() {
+  const chatBox = document.getElementById('chatBox');
+  const chatInput = document.getElementById('chatInput');
+  const suggestionsBtn = document.getElementById('suggestionsBtn');
+  const suggestionsContainer = document.getElementById('suggestionsContainer');
+  const closeSuggestions = document.getElementById('closeSuggestions');
+  const suggestionChips = document.querySelectorAll('.suggestion-chip');
+  
+  // Auto-scroll al final del chat
+  if (chatBox) {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+  
+  // Auto-expand textarea
+  if (chatInput) {
+    chatInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+    
+    // Enfocar el textarea al cargar
+    chatInput.focus();
+  }
+  
+  // Toggle sugerencias
+  if (suggestionsBtn && suggestionsContainer) {
+    suggestionsBtn.addEventListener('click', function() {
+      suggestionsContainer.classList.toggle('show');
+    });
+  }
+  
+  // Cerrar sugerencias
+  if (closeSuggestions && suggestionsContainer) {
+    closeSuggestions.addEventListener('click', function() {
+      suggestionsContainer.classList.remove('show');
+    });
+  }
+  
+  // Sugerencias rápidas
+  suggestionChips.forEach(chip => {
+    chip.addEventListener('click', function() {
+      const prompt = this.getAttribute('data-prompt');
+      if (chatInput) {
+        chatInput.value = prompt;
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+        chatInput.focus();
+      }
+      suggestionsContainer.classList.remove('show');
+    });
+  });
+  
+  // Enviar con Enter (sin Shift)
+  if (chatInput) {
+    chatInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        this.form.querySelector('.btn-send').click();
+      }
+    });
+  }
+  
+  // Efecto de escritura simulada para nuevos mensajes (opcional)
+  function simulateTyping(messageElement) {
+    const text = messageElement.textContent;
+    messageElement.textContent = '';
+    let i = 0;
+    const timer = setInterval(function() {
+      if (i < text.length) {
+        messageElement.textContent += text.charAt(i);
+        i++;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } else {
+        clearInterval(timer);
+      }
+    }, 20);
+  }
 });
 </script>
 

@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-arrow-clockwise me-2"></i>Reactivar Publicaciones</h4>
+                </div>
+                <div class="card-body">
+                    {% if inactive_products %}
+                    <form method="post" id="reactivateForm">
+                        {% csrf_token %}
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <p class="fs-5 mb-0">Seleccioná los productos que querés reactivar:</p>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="selectAll">
+                                <label class="form-check-label fw-semibold" for="selectAll">
+                                    Seleccionar todos
+                                </label>
+                            </div>
+                        </div>
+                    
+                        <div class="mb-4">
+                            <div class="list-group">
+                                {% for product in inactive_products %}
+                                <div class="list-group-item">
+                                    <div class="d-flex align-items-center">
+                                        <div class="form-check me-3">
+                                            <input class="form-check-input product-check" 
+                                                   type="checkbox" 
+                                                   name="products_to_reactivate" 
+                                                   value="{{ product.id }}" 
+                                                   id="product_{{ product.id }}">
+                                        </div>
+                                        
+                                        {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.title }}" 
+                                             class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center me-3" 
+                                             style="width: 60px; height: 60px;">
+                                            <i class="bi bi-box-seam fs-4"></i>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="flex-grow-1">
+                                            <label for="product_{{ product.id }}" class="fw-bold mb-1 cursor-pointer">
+                                                {{ product.title }}
+                                            </label>
+                                            <div class="d-flex gap-3">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-tag me-1"></i>{{ product.category }}
+                                                </small>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-box me-1"></i>Stock: {{ product.stock }}
+                                                </small>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar me-1"></i>
+                                                    {{ product.created_at|date:"d/m/Y" }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="text-end">
+                                            <span class="badge bg-primary fs-6">${{ product.price }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Importante:</strong> Los productos seleccionados volverán a ser visibles en el catálogo público.
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span id="selectedCount" class="badge bg-success fs-6">0</span>
+                                <span class="text-muted ms-2">productos seleccionados</span>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'market:my-products' %}" class="btn btn-outline-secondary btn-lg px-4">
+                                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg px-4" id="reactivateBtn" disabled>
+                                    <i class="bi bi-check-lg me-2"></i>Reactivar seleccionados
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle display-1 text-success"></i>
+                        <p class="fs-5 mt-3">¡No tenés productos inactivos para reactivar!</p>
+                        <a href="{% url 'market:my-products' %}" class="btn btn-primary mt-3">
+                            <i class="bi bi-arrow-left me-2"></i>Volver a Mis Publicaciones
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.list-group-item {
+    border: 1px solid #e9ecef;
+    border-radius: 8px !important;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    padding: 1rem;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.list-group-item.selected {
+    background-color: #e8f5e8;
+    border-left: 4px solid #28a745;
+}
+
+.form-check-input {
+    transform: scale(1.2);
+}
+
+.form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-success:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary {
+    border-radius: 50px;
+    font-weight: 600;
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+    border-radius: 8px;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+}
+
+#selectedCount {
+    font-size: 1.1rem;
+    padding: 0.6rem 1rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const productCheckboxes = document.querySelectorAll('.product-check');
+    const selectedCount = document.getElementById('selectedCount');
+    const reactivateBtn = document.getElementById('reactivateBtn');
+    const reactivateForm = document.getElementById('reactivateForm');
+
+    // Función para actualizar el contador y estado del botón
+    function updateSelection() {
+        const selectedProducts = document.querySelectorAll('.product-check:checked');
+        const count = selectedProducts.length;
+        
+        selectedCount.textContent = count;
+        
+        // Habilitar/deshabilitar botón
+        reactivateBtn.disabled = count === 0;
+        
+        // Actualizar texto del botón
+        if (count > 0) {
+            reactivateBtn.innerHTML = `<i class="bi bi-check-lg me-2"></i>Reactivar ${count} producto${count !== 1 ? 's' : ''}`;
+        } else {
+            reactivateBtn.innerHTML = `<i class="bi bi-check-lg me-2"></i>Reactivar seleccionados`;
+        }
+        
+        // Actualizar estado de "Seleccionar todos"
+        selectAllCheckbox.checked = count === productCheckboxes.length;
+        selectAllCheckbox.indeterminate = count > 0 && count < productCheckboxes.length;
+        
+        // Resaltar items seleccionados
+        productCheckboxes.forEach(checkbox => {
+            const listItem = checkbox.closest('.list-group-item');
+            if (checkbox.checked) {
+                listItem.classList.add('selected');
+            } else {
+                listItem.classList.remove('selected');
+            }
+        });
+    }
+
+    // Seleccionar/deseleccionar todos
+    selectAllCheckbox.addEventListener('change', function() {
+        productCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+        updateSelection();
+    });
+
+    // Actualizar cuando cambia cualquier checkbox individual
+    productCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelection);
+    });
+
+    // Hacer clickeable toda la tarjeta del producto
+    productCheckboxes.forEach(checkbox => {
+        const listItem = checkbox.closest('.list-group-item');
+        listItem.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox' && !e.target.closest('a')) {
+                checkbox.checked = !checkbox.checked;
+                updateSelection();
+            }
+        });
+    });
+
+    // Confirmación antes de enviar el formulario
+    reactivateForm.addEventListener('submit', function(e) {
+        const selectedCount = document.querySelectorAll('.product-check:checked').length;
+        if (selectedCount === 0) {
+            e.preventDefault();
+            return;
+        }
+        
+        const confirmMessage = `¿Estás seguro de que querés reactivar ${selectedCount} producto${selectedCount !== 1 ? 's' : ''}?`;
+        if (!confirm(confirmMessage)) {
+            e.preventDefault();
+        }
+    });
+
+    // Inicializar contador
+    updateSelection();
+});
+</script>
+{% endblock %}

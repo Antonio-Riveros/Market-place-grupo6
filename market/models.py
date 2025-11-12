@@ -8,11 +8,11 @@ class Product(models.Model):
     description = models.TextField(blank=True)
     marca = models.CharField(max_length=100, blank=True, default="Generico")
     price = models.DecimalField(max_digits=12, decimal_places=2)
-    stock = models.PositiveIntegerField(default=1)  # nuevo campo
-    image = models.ImageField(upload_to="product_images/", blank=True, null=True)  # opcional
-    active = models.BooleanField(default=True)
+    stock = models.PositiveIntegerField(default=1)
+    image = models.ImageField(upload_to="product_images/", blank=True, null=True)
+    active = models.BooleanField(default=True)  # ✅ MANTENEMOS este campo
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)  # fecha de última modificación
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -20,7 +20,19 @@ class Product(models.Model):
     def is_available(self):
         return self.active and self.stock > 0
     
-#AGREGAMOS CARRITO 
+    @property
+    def is_active(self):
+        return self.active
+    
+    @property 
+    def is_inactive(self):
+        return not self.active
+    
+    # Para mantener compatibilidad con el código
+    @property
+    def status(self):
+        return 'active' if self.active else 'inactive'
+
 class Cart(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

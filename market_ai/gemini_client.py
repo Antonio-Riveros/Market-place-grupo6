@@ -1,5 +1,6 @@
 import os
 import logging
+from dotenv import load_dotenv
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
 from django.shortcuts import render
@@ -7,35 +8,34 @@ from .forms import ChatForm
 
 logger = logging.getLogger(__name__)
 
+# ---------------- Cargar .env ----------------
+load_dotenv()
+
 # ---------------- Configuración del cliente ----------------
 def configure_client():
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise ValueError("No se encontró GEMINI_API_KEY ni GOOGLE_API_KEY en las variables de entorno.")
+        raise ValueError("❌ La variable GEMINI_API_KEY no está definida en el archivo .env")
     genai.configure(api_key=api_key)
 
-# ---------------- Modelo fijo: Gemini 2.0 Flash ----------------
+# ---------------- Modelo fijo ----------------
 def get_first_text_model():
     try:
         configure_client()
-        modelos = genai.list_models()
-        text_models = [m.name for m in modelos if "2.0-flash" in m.name]
-        return text_models[0] if text_models else None
+        return "gemini-2.5-flash"
     except Exception as e:
-        logger.warning(f"No se pudieron listar modelos: {e}")
+        logger.warning(f"No se pudieron configurar modelos: {e}")
         return None
-    
 
 # ---------------- Generación de texto ----------------
-def generate_text(prompt, max_output_tokens=200): 
+def generate_text(prompt, max_output_tokens=500):
     model_name = get_first_text_model()
     if not model_name:
         return "El asistente no está disponible en este momento."
 
     config = GenerationConfig(
-        max_output_tokens= max_output_tokens,
+        max_output_tokens=max_output_tokens,
         temperature=0.7
-
     )
 
     try:
@@ -43,16 +43,26 @@ def generate_text(prompt, max_output_tokens=200):
         response = model.generate_content(prompt, generation_config=config)
         logger.debug(f"Respuesta cruda de Gemini: {response}")
 
-        if hasattr(response, 'text') and response.text:
-            return response.text
-        elif hasattr(response, 'candidates') and response.candidates:
-            parts = response.candidates[0].content.parts
-            if parts and hasattr(parts[0], 'text'):
-                return parts[0].text
-        return "El asistente no pudo generar una respuesta."
+        # Intentar obtener texto directamente
+        if hasattr(response, "text") and response.text:
+            return response.text.strip()
+
+        # Si no hay texto directo, buscar en los candidatos
+        if hasattr(response, "candidates") and response.candidates:
+            for candidate in response.candidates:
+                if hasattr(candidate, "content") and candidate.content.parts:
+                    texts = [p.text for p in candidate.content.parts if hasattr(p, "text")]
+                    if texts:
+                        return " ".join(texts).strip()
+
+            finish_reason = getattr(response.candidates[0], "finish_reason", None)
+            return f"El modelo finalizó sin texto (finish_reason={finish_reason})."
+
+        return "No se generó ninguna respuesta."
+
     except Exception as e:
         logger.warning(f"Error al generar texto: {e}")
-        return "El asistente no está disponible en este momento."
+        return f"Error al generar texto: {e}"
 
 # ---------------- Generación de embeddings ----------------
 def embed_text(text, model="text-embedding-004"):

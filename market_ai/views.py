@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from decimal import Decimal
 from .forms import PriceSuggestForm, ChatForm
 from .gemini_client import generate_text, embed_text
 from market.models import Product
@@ -9,49 +10,117 @@ import numpy as np
 
 def price_suggest(request):
     sugerencia = None
+    productos_sugeridos = []
+    productos_disponibles = []
+    
     if request.method == "POST":
         form = PriceSuggestForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
+            budget = data['budget']
+            meal_type = data['meal_type']
+            preferences = data['preferences']
             
-            # PROMPT MEJORADO con contexto argentino y análisis profundo
-            prompt = f"""
-            Eres un experto en precios de mercado argentino con conocimiento en comercio electrónico.
+            # Convertir a float para las operaciones
+            budget_float = float(budget)
             
-            ANALIZA este producto para sugerir un precio óptimo:
+            # Buscar productos que estén dentro del presupuesto
+            products = Product.objects.filter(
+                active=True,
+                price__lte=budget_float
+            ).order_by('price')
             
-            📦 PRODUCTO:
-            - Título: {data['title']}
-            - Descripción: {data['description']}
-            - Marca: {data['marca']}
-            - Precio actual: {data.get('current_price', 'No especificado')}
+            productos_disponibles = list(products[:15])
+            productos_sugeridos = productos_disponibles
             
-            🎯 CRITERIOS DE ANÁLISIS:
-            1. Valor real basado en características y calidad
-            2. Competitividad en el mercado argentino
-            3. Percepción de valor del consumidor local
-            4. Rentabilidad para el vendedor
+            if productos_disponibles:
+                # Construir lista de productos para el prompt
+                product_list = "\n".join([f"- {p.title}: ${p.price}" for p in productos_disponibles])
+                
+                # Prompt más simple y directo
+                prompt = (
+                    f"Con un presupuesto de ${budget} para {meal_type}, "
+                    f"y con estos productos disponibles:\n\n{product_list}\n\n"
+                    f"Sugerí 2-3 comidas simples que pueda preparar. "
+                    f"Cada comida debe usar uno o más productos de la lista "
+                    f"y el costo total no debe superar ${budget}. "
+                    f"Incluí el nombre de la comida, los productos usados y el costo total. "
+                    f"Sé práctico y realista."
+                )
+                
+                try:
+                    respuesta = generate_text(prompt, max_output_tokens=500)
+                    if "Error al generar texto" not in respuesta:
+                        sugerencia = respuesta
+                    else:
+                        # Si hay error, generar sugerencias básicas manualmente
+                        sugerencia = generar_sugerencias_manuales(productos_disponibles, budget_float, meal_type)
+                except Exception as e:
+                    # Fallback a sugerencias manuales
+                    sugerencia = generar_sugerencias_manuales(productos_disponibles, budget_float, meal_type)
             
-            📊 FORMATO DE RESPUESTA OBLIGATORIO:
-            PRECIO_SUGERIDO: [número entero sin puntos ni comas]
-            RAZÓN: [2-3 frases explicando el análisis]
-            TIPO: [Premium | Competitivo | Económico | Oferta]
-            
-            Ejemplo:
-            PRECIO_SUGERIDO: 15000
-            RAZÓN: El precio considera la calidad de materiales y la demanda estable en el rubro. Está 15% bajo el promedio de marcas similares.
-            TIPO: Competitivo
-            """
-            
-            respuesta = generate_text(prompt, max_output_tokens=200)
-            sugerencia = respuesta
     else:
         form = PriceSuggestForm()
     
     return render(request, "price_suggest.html", {
         "form": form, 
-        "sugerencia": sugerencia
+        "sugerencia": sugerencia,
+        "productos_sugeridos": productos_sugeridos,
+        "productos_disponibles": productos_disponibles
     })
+
+def generar_sugerencias_manuales(productos, presupuesto, tipo_comida):
+    """Genera sugerencias manuales cuando la IA falla"""
+    sugerencias = []
+    
+    # Agrupar productos por tipo
+    frutas_verduras = [p for p in productos if any(word in p.title.lower() for word in 
+                      ['apple', 'pepper', 'cucumber', 'tomato', 'lettuce', 'banana', 'orange', 'fruit', 'vegetable'])]
+    proteinas = [p for p in productos if any(word in p.title.lower() for word in 
+                ['egg', 'steak', 'fish', 'chicken', 'meat', 'beef', 'pork'])]
+    basicos = [p for p in productos if any(word in p.title.lower() for word in 
+              ['oil', 'rice', 'bread', 'salt', 'sugar', 'flour', 'pasta'])]
+    
+    # Sugerencia 1: Ensalada simple
+    if len(frutas_verduras) >= 2:
+        ingredientes = frutas_verduras[:2]
+        total = sum(float(p.price) for p in ingredientes)
+        if total <= presupuesto:
+            sugerencias.append(
+                f"🥗 Ensalada Fresca\n"
+                f"Productos: {ingredientes[0].title} (${ingredientes[0].price}) + {ingredientes[1].title} (${ingredientes[1].price})\n"
+                f"Total: ${total:.2f}\n"
+                f"Preparación: Lava y corta los ingredientes, mezcla y sirve."
+            )
+    
+    # Sugerencia 2: Plato con proteína
+    if proteinas and frutas_verduras:
+        proteina = proteinas[0]
+        verdura = frutas_verduras[0]
+        total = float(proteina.price) + float(verdura.price)
+        if total <= presupuesto:
+            sugerencias.append(
+                f"🍲 {proteina.title} con {verdura.title}\n"
+                f"Productos: {proteina.title} (${proteina.price}) + {verdura.title} (${verdura.price})\n"
+                f"Total: ${total:.2f}\n"
+                f"Preparación: Cocina la proteína y acompaña con la verdura fresca o cocida."
+            )
+    
+    # Sugerencia 3: Opción económica
+    productos_baratos = [p for p in productos if float(p.price) <= presupuesto * 0.3]
+    if productos_baratos:
+        producto = productos_baratos[0]
+        sugerencias.append(
+            f"🍎 {producto.title} individual\n"
+            f"Producto: {producto.title} (${producto.price})\n"
+            f"Total: ${producto.price}\n"
+            f"Preparación: Disfruta este producto como snack o complemento de tu comida."
+        )
+    
+    if sugerencias:
+        return "💡 Sugerencias basadas en productos disponibles:\n\n" + "\n\n".join(sugerencias)
+    else:
+        return "📦 Con tu presupuesto puedes comprar estos productos individuales:"
 
 def ai_chat(request):
     # Limpiar chat si se presiona el botón
@@ -74,7 +143,7 @@ def ai_chat(request):
 
             # PROMPT MEJORADO con personalidad definida y contexto marketplace
             system_prompt = """
-            Eres "MateBot", un asistente virtual especializado en el marketplace argentino. 
+            Eres "Matioli", un asistente virtual especializado en el marketplace argentino. 
 
             TU PERSONALIDAD:
             - Amable y cercano, como un amigo que sabe de compras
@@ -117,10 +186,7 @@ def ai_chat(request):
     else:
         form = ChatForm()
 
-    return render(request, "ai_chat.html", {
-        "form": form, 
-        "history": history
-    })
+    return render(request, "ai_chat.html", {"form": form, "history": history})
 
 def recommend_similar(request, pk):
     """Sistema de recomendaciones mejorado con análisis semántico"""
@@ -182,71 +248,5 @@ def recommend_similar(request, pk):
 
     # Ordenar y tomar los mejores
     results.sort(key=lambda x: x[1], reverse=True)
-    top_products = [product for product, score in results[:8] if score > 0.3]  # Filtro de similitud mínima
-    
-    # Si no hay suficientes similares, completar con productos de misma categoría
-    if len(top_products) < 4:
-        category_fallback = Product.objects.filter(
-            category=producto.category,
-            active=True,
-            stock__gt=0
-        ).exclude(id=producto.id)[:6]
-        top_products.extend(category_fallback)
-    
-    # Eliminar duplicados
-    seen_ids = set()
-    unique_products = []
-    for product in top_products[:6]:  # Máximo 6 recomendaciones
-        if product.id not in seen_ids:
-            seen_ids.add(product.id)
-            unique_products.append(product)
-
-    return render(request, "market_ai/recommendations.html", {
-        "product": producto, 
-        "recommended": unique_products,
-        "method": "IA por similitud semántica"
-    })
-
-# NUEVA FUNCIÓN: Análisis de competitividad de precios
-@login_required
-def price_competitiveness_analysis(request, product_id):
-    """Analiza qué tan competitivo es un precio vs productos similares en la plataforma"""
-    product = get_object_or_404(Product, id=product_id, seller=request.user)
-    
-    # Encontrar productos similares en la misma categoría
-    similar_products = Product.objects.filter(
-        category=product.category,
-        active=True
-    ).exclude(id=product.id)[:10]
-    
-    if similar_products:
-        avg_price = sum(p.price for p in similar_products) / len(similar_products)
-        price_position = "ALTO" if product.price > avg_price * 1.2 else "BAJO" if product.price < avg_price * 0.8 else "MEDIO"
-        
-        prompt = f"""
-        Como experto en precios de marketplace, analiza la competitividad de este producto:
-        
-        📊 CONTEXTO:
-        - Producto: {product.title} a ${product.price}
-        - Categoría: {product.category}
-        - Precio promedio de 10 similares: ${avg_price:.2f}
-        - Posición relativa: {price_position}
-        
-        🎯 DA UN ANÁLISIS CON:
-        1. Evaluación de competitividad (Alta/Media/Baja)
-        2. Razón principal del posicionamiento
-        3. Recomendación específica (mantener, subir, bajar)
-        4. Estrategia sugerida
-        
-        Sé directo y práctico para el vendedor.
-        """
-        
-        analysis = generate_text(prompt, max_output_tokens=250)
-    else:
-        analysis = "No hay suficientes productos similares para comparar en este momento."
-    
-    return render(request, "market_ai/price_analysis.html", {
-        "product": product,
-        "analysis": analysis,
-        "similar_count": len(similar_products)
-    })
+    top = [p for p,score in results[:6]]
+    return render(request, "market_ai/recommendations.html", {"product": producto, "recommended": top})

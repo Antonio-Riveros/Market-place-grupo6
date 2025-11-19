@@ -1,193 +1,143 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="pricing-ai-container">
-  <!-- Header con información -->
-  <div class="pricing-header">
-    <div class="header-icon">
-      <i class="fas fa-chart-line"></i>
+<div class="ai-chat-container">
+  <!-- Header del chat -->
+  <div class="chat-header">
+    <div class="chat-avatar">
+      <i class="fas fa-utensils"></i>
     </div>
-    <div class="header-content">
-      <h1 class="pricing-title">PrecIA 💰</h1>
-      <p class="pricing-subtitle">Tu asistente inteligente para estrategias de precios</p>
-      <div class="pricing-features">
-        <span class="feature-tag">
-          <i class="fas fa-bullseye"></i> Precios competitivos
-        </span>
-        <span class="feature-tag">
-          <i class="fas fa-chart-bar"></i> Análisis de mercado
-        </span>
-        <span class="feature-tag">
-          <i class="fas fa-lightbulb"></i> Recomendaciones inteligentes
-        </span>
+    <div class="chat-info">
+      <h2 class="chat-title">¿Qué como hoy? 🍽️</h2>
+      <p class="chat-subtitle">Tu asistente para crear platos con tu presupuesto</p>
+      <div class="chat-status">
+        <span class="status-dot online"></span>
+        <span class="status-text">Analizando productos disponibles</span>
       </div>
+    </div>
+    <div class="chat-actions">
+      <button class="btn-action" title="Nueva búsqueda" onclick="location.reload()">
+        <i class="fas fa-redo"></i>
+      </button>
     </div>
   </div>
 
-  <!-- Contenedor principal -->
-  <div class="pricing-main">
-    <!-- Formulario -->
-    <div class="form-section">
-      <div class="form-header">
-        <h3><i class="fas fa-edit"></i> Información del Producto</h3>
-        <p>Completá los datos para obtener una sugerencia de precio precisa</p>
+  <!-- Área de chat -->
+  <div class="chat-main">
+    <div class="chat-box" id="chatBox">
+      <!-- Mensaje de bienvenida -->
+      <div class="welcome-message">
+        <div class="welcome-icon">
+          <i class="fas fa-chef-hat"></i>
+        </div>
+        <h3>¡Hola! Soy tu chef asistente</h3>
+        <p>Contame tu presupuesto y te ayudo a crear platos deliciosos con productos disponibles</p>
+        <div class="welcome-features">
+          <div class="feature">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Dentro de tu presupuesto</span>
+          </div>
+          <div class="feature">
+            <i class="fas fa-utensils"></i>
+            <span>Platos realistas</span>
+          </div>
+          <div class="feature">
+            <i class="fas fa-lightbulb"></i>
+            <span>Combinaciones creativas</span>
+          </div>
+        </div>
       </div>
 
-      <form method="post" class="ai-form">
-        {% csrf_token %}
-        
-        <div class="form-grid">
-          {% for field in form %}
-          <div class="form-group {% if field.errors %}error{% endif %}">
-            <label for="{{ field.id_for_label }}">
-              <i class="fas fa-{% cycle 'tag' 'dollar-sign' 'calculator' 'store' 'users' 'tachometer-alt' %}"></i>
-              {{ field.label }}
-            </label>
-            {{ field }}
-            {% if field.help_text %}
-              <div class="help-text">{{ field.help_text }}</div>
-            {% endif %}
-            {% if field.errors %}
-              <div class="error-text">{{ field.errors.0 }}</div>
-            {% endif %}
-          </div>
-          {% endfor %}
+      <!-- Productos disponibles -->
+      {% if productos_sugeridos %}
+      <div class="message ai-message">
+        <div class="message-avatar">
+          <i class="fas fa-store"></i>
         </div>
-
-        <button class="btn-submit" type="submit">
-          <i class="fas fa-brain"></i>
-          <span class="btn-text">Analizar con IA</span>
-          <div class="btn-loading">
-            <i class="fas fa-spinner fa-spin"></i>
+        <div class="message-content">
+          <div class="message-sender">Productos Disponibles</div>
+          <div class="message-text">
+            <div class="products-grid">
+              {% for producto in productos_sugeridos %}
+              <div class="product-item">
+                <div class="product-name">{{ producto.title }}</div>
+                <div class="product-price">${{ producto.price }}</div>
+                {% if producto.description %}
+                  <div class="product-desc">{{ producto.description|truncatewords:8 }}</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
           </div>
-        </button>
-      </form>
-    </div>
+          <div class="message-time">Ahora</div>
+        </div>
+      </div>
+      {% endif %}
 
-    <!-- Resultados -->
-    {% if sugerencia %}
-    <div class="result-section">
-      <div class="result-header">
-        <div class="result-icon">
+      <!-- Sugerencias de la IA -->
+      {% if sugerencia %}
+      <div class="message ai-message">
+        <div class="message-avatar">
           <i class="fas fa-robot"></i>
         </div>
-        <div class="result-title">
-          <h3>Análisis de PrecIA</h3>
-          <p>Recomendaciones basadas en inteligencia artificial</p>
-        </div>
-        <button class="btn-copy" onclick="copyToClipboard()" title="Copiar resultado">
-          <i class="fas fa-copy"></i>
-        </button>
-      </div>
-
-      <div class="result-content">
-        <div class="result-card">
-          <div class="card-header">
-            <i class="fas fa-chart-pie"></i>
-            <span>Análisis Completo</span>
-          </div>
-          <div class="card-content">
-            <pre>{{ sugerencia }}</pre>
-          </div>
-        </div>
-
-        <!-- Métricas rápidas (pueden extraerse del análisis) -->
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-icon price">
-              <i class="fas fa-tag"></i>
-            </div>
-            <div class="metric-info">
-              <span class="metric-label">Precio Sugerido</span>
-              <span class="metric-value">$--</span>
+        <div class="message-content">
+          <div class="message-sender">Chef IA</div>
+          <div class="message-text">
+            <div class="sugerencias-content">
+              {{ sugerencia|linebreaks }}
             </div>
           </div>
-          <div class="metric-card">
-            <div class="metric-icon margin">
-              <i class="fas fa-percentage"></i>
-            </div>
-            <div class="metric-info">
-              <span class="metric-label">Margen Estimado</span>
-              <span class="metric-value">--%</span>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon competitive">
-              <i class="fas fa-trophy"></i>
-            </div>
-            <div class="metric-info">
-              <span class="metric-label">Competitividad</span>
-              <span class="metric-value">--/10</span>
-            </div>
-          </div>
+          <div class="message-time">Ahora</div>
         </div>
       </div>
-
-      <div class="result-actions">
-        <button class="btn-action secondary">
-          <i class="fas fa-download"></i> Exportar
-        </button>
-        <button class="btn-action secondary">
-          <i class="fas fa-history"></i> Nuevo Análisis
-        </button>
-        <button class="btn-action primary">
-          <i class="fas fa-shopping-cart"></i> Aplicar Precio
-        </button>
-      </div>
+      {% endif %}
     </div>
-    {% else %}
-    <!-- Estado vacío -->
-    <div class="empty-state">
-      <div class="empty-icon">
-        <i class="fas fa-calculator"></i>
-      </div>
-      <h3>¿No estás seguro de tu precio?</h3>
-      <p>Completá el formulario y nuestra IA analizará tu producto para sugerirte el precio óptimo basado en:</p>
-      <div class="empty-features">
-        <div class="feature">
-          <i class="fas fa-balance-scale"></i>
-          <span>Costos y márgenes</span>
-        </div>
-        <div class="feature">
-          <i class="fas fa-market"></i>
-          <span>Competencia local</span>
-        </div>
-        <div class="feature">
-          <i class="fas fa-trend-up"></i>
-          <span>Tendencias del mercado</span>
-        </div>
-      </div>
-    </div>
-    {% endif %}
-  </div>
 
-  <!-- Tips y consejos -->
-  <div class="tips-section">
-    <h4><i class="fas fa-graduation-cap"></i> Tips para mejores resultados</h4>
-    <div class="tips-grid">
-      <div class="tip-card">
-        <i class="fas fa-receipt"></i>
-        <h5>Costos reales</h5>
-        <p>Incluí todos los costos: producción, envío, impuestos y comisiones</p>
+    <!-- Formulario -->
+    <form method="post" class="chat-form">
+      {% csrf_token %}
+      <div class="input-container">
+        <div class="form-fields">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="id_budget">
+                <i class="fas fa-money-bill-wave"></i>
+                Presupuesto
+              </label>
+              {{ form.budget }}
+            </div>
+            <div class="form-group">
+              <label for="id_meal_type">
+                <i class="fas fa-clock"></i>
+                Tipo de comida
+              </label>
+              {{ form.meal_type }}
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label for="id_preferences">
+              <i class="fas fa-heart"></i>
+              Preferencias
+            </label>
+            {{ form.preferences }}
+            <div class="help-text">Ej: vegetariano, sin gluten, rápido, saludable</div>
+          </div>
+        </div>
+        <div class="send-actions">
+          <button type="submit" class="btn-send" title="Buscar platos">
+            <i class="fas fa-search"></i>
+            Buscar Platos
+          </button>
+        </div>
       </div>
-      <div class="tip-card">
-        <i class="fas fa-search"></i>
-        <h5>Investiga competencia</h5>
-        <p>Conocé los precios de productos similares en el mercado</p>
-      </div>
-      <div class="tip-card">
-        <i class="fas fa-bullseye"></i>
-        <h5>Define tu público</h5>
-        <p>Considerá el poder adquisitivo de tus clientes objetivo</p>
-      </div>
-    </div>
+    </form>
   </div>
 </div>
 
 <style>
 /* ===== CONTENEDOR PRINCIPAL ===== */
-.pricing-ai-container {
-  max-width: 1000px;
+.ai-chat-container {
+  max-width: 900px;
   margin: 20px auto;
   background: var(--white);
   border-radius: var(--border-radius-lg);
@@ -196,127 +146,321 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* ===== HEADER ===== */
-.pricing-header {
-  background: var(--gradient-primary);
-  color: var(--white);
-  padding: 30px 40px;
+/* ===== HEADER DEL CHAT ===== */
+.chat-header {
   display: flex;
   align-items: center;
-  gap: 20px;
+  padding: 20px 25px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  gap: 15px;
 }
 
-.header-icon {
-  width: 80px;
-  height: 80px;
+.chat-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.chat-info {
+  flex: 1;
+}
+
+.chat-title {
+  margin: 0 0 5px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.chat-subtitle {
+  margin: 0 0 8px 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.chat-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+.status-text {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-action:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* ===== ÁREA PRINCIPAL DEL CHAT ===== */
+.chat-main {
+  display: flex;
+  flex-direction: column;
+  height: 700px;
+}
+
+.chat-box {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ===== MENSAJES ===== */
+.message {
+  display: flex;
+  gap: 12px;
+  max-width: 85%;
+  animation: messageAppear 0.3s ease;
+}
+
+@keyframes messageAppear {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-message {
+  align-self: flex-start;
+}
+
+.message-avatar {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  backdrop-filter: blur(10px);
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
-.header-content {
-  flex: 1;
+.ai-message .message-avatar {
+  background: var(--accent);
+  color: var(--white);
 }
 
-.pricing-title {
-  margin: 0 0 8px 0;
-  font-size: 2rem;
-  font-weight: 700;
-}
-
-.pricing-subtitle {
-  margin: 0 0 15px 0;
-  opacity: 0.9;
-  font-size: 1.1rem;
-}
-
-.pricing-features {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.feature-tag {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  backdrop-filter: blur(10px);
-}
-
-/* ===== CONTENIDO PRINCIPAL ===== */
-.pricing-main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  padding: 30px;
-  min-height: 500px;
-}
-
-/* ===== FORMULARIO ===== */
-.form-section {
-  background: var(--background);
-  padding: 25px;
-  border-radius: var(--border-radius);
+.message-content {
+  background: var(--white);
+  padding: 12px 16px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  max-width: 100%;
+  border-bottom-left-radius: 4px;
   border: 1px solid #e9ecef;
 }
 
-.form-header {
-  margin-bottom: 25px;
+.message-sender {
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  opacity: 0.8;
 }
 
-.form-header h3 {
+.message-text {
+  line-height: 1.4;
+  font-size: 0.95rem;
+  word-wrap: break-word;
+}
+
+.message-time {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-top: 5px;
+  text-align: right;
+}
+
+/* ===== PRODUCTOS ===== */
+.products-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.product-item {
+  padding: 10px;
+  background: var(--light);
+  border-radius: 8px;
+  border-left: 3px solid var(--success);
+}
+
+.product-name {
+  font-weight: 600;
   color: var(--text-main);
-  margin: 0 0 8px 0;
-  font-size: 1.3rem;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.form-header p {
-  color: var(--text-light);
-  margin: 0;
   font-size: 0.9rem;
 }
 
-.form-grid {
+.product-price {
+  font-weight: 700;
+  color: var(--success);
+  font-size: 0.95rem;
+  margin: 2px 0;
+}
+
+.product-desc {
+  color: var(--text-light);
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+/* ===== SUGERENCIAS ===== */
+.sugerencias-content {
+  line-height: 1.5;
+}
+
+.sugerencias-content pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+}
+
+/* ===== MENSAJE DE BIENVENIDA ===== */
+.welcome-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+}
+
+.welcome-icon {
+  font-size: 3rem;
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+
+.welcome-message h3 {
+  color: var(--text-main);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 30px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.feature {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  align-items: center;
+  gap: 8px;
+  padding: 15px;
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.feature i {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+.feature span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-main);
+  text-align: center;
+}
+
+/* ===== FORMULARIO ===== */
+.chat-form {
+  border-top: 1px solid #e9ecef;
+  background: var(--white);
+  padding: 20px;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
 }
 
 .form-group label {
   font-weight: 600;
   color: var(--text-main);
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.95rem;
+  gap: 5px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 12px 15px;
+  padding: 10px 12px;
   border: 1px solid #dee2e6;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.95rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
-  background: var(--white);
   font-family: inherit;
 }
 
@@ -328,507 +472,121 @@
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
 }
 
-.form-group.error input,
-.form-group.error select,
-.form-group.error textarea {
-  border-color: var(--danger);
-  box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.1);
-}
-
 .help-text {
   font-size: 0.8rem;
   color: var(--text-light);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
-.error-text {
-  font-size: 0.8rem;
-  color: var(--danger);
-  margin-top: 4px;
-  font-weight: 500;
+.send-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
-/* ===== BOTÓN ENVIAR ===== */
-.btn-submit {
+.btn-send {
   background: var(--primary);
   color: var(--white);
   border: none;
-  border-radius: 25px;
-  padding: 15px 30px;
-  font-size: 1rem;
+  border-radius: 20px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 20px;
-  position: relative;
-  overflow: hidden;
+  gap: 8px;
 }
 
-.btn-submit:hover {
+.btn-send:hover {
   background: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
-}
-
-.btn-submit:active {
-  transform: translateY(0);
-}
-
-.btn-loading {
-  display: none;
-}
-
-.btn-submit.loading .btn-text {
-  opacity: 0;
-}
-
-.btn-submit.loading .btn-loading {
-  display: block;
-  position: absolute;
-}
-
-/* ===== RESULTADOS ===== */
-.result-section {
-  background: var(--background);
-  padding: 25px;
-  border-radius: var(--border-radius);
-  border: 1px solid #e9ecef;
-  display: flex;
-  flex-direction: column;
-}
-
-.result-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.result-icon {
-  width: 50px;
-  height: 50px;
-  background: var(--accent);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--white);
-  font-size: 1.2rem;
-}
-
-.result-title {
-  flex: 1;
-}
-
-.result-title h3 {
-  margin: 0 0 5px 0;
-  color: var(--text-main);
-  font-size: 1.3rem;
-}
-
-.result-title p {
-  margin: 0;
-  color: var(--text-light);
-  font-size: 0.9rem;
-}
-
-.btn-copy {
-  background: var(--light);
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  color: var(--text-light);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-copy:hover {
-  background: var(--primary);
-  color: var(--white);
-  transform: scale(1.1);
-}
-
-.result-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.result-card {
-  background: var(--white);
-  border-radius: var(--border-radius);
-  border: 1px solid #e9ecef;
-  overflow: hidden;
-}
-
-.card-header {
-  background: var(--light);
-  padding: 15px 20px;
-  border-bottom: 1px solid #e9ecef;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-.card-content {
-  padding: 20px;
-}
-
-.card-content pre {
-  margin: 0;
-  white-space: pre-wrap;
-  font-family: 'Inter', monospace;
-  line-height: 1.5;
-  color: var(--text-main);
-  font-size: 0.9rem;
-}
-
-/* ===== MÉTRICAS ===== */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-}
-
-.metric-card {
-  background: var(--white);
-  padding: 20px;
-  border-radius: var(--border-radius);
-  border: 1px solid #e9ecef;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  transition: all 0.3s ease;
-}
-
-.metric-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.metric-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  color: var(--white);
-}
-
-.metric-icon.price { background: var(--success); }
-.metric-icon.margin { background: var(--primary); }
-.metric-icon.competitive { background: var(--accent); }
-
-.metric-info {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.metric-label {
-  font-size: 0.8rem;
-  color: var(--text-light);
-  font-weight: 500;
-}
-
-.metric-value {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-/* ===== ACCIONES ===== */
-.result-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #e9ecef;
-}
-
-.btn-action {
-  flex: 1;
-  padding: 12px 20px;
-  border: 2px solid;
-  border-radius: var(--border-radius-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 0.9rem;
-}
-
-.btn-action.primary {
-  background: var(--success);
-  border-color: var(--success);
-  color: var(--white);
-}
-
-.btn-action.primary:hover {
-  background: #2d8c00;
-  border-color: #2d8c00;
-  transform: translateY(-2px);
-}
-
-.btn-action.secondary {
-  background: transparent;
-  border-color: var(--text-light);
-  color: var(--text-light);
-}
-
-.btn-action.secondary:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  transform: translateY(-2px);
-}
-
-/* ===== ESTADO VACÍO ===== */
-.empty-state {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 60px 40px;
-  color: var(--text-light);
-}
-
-.empty-icon {
-  font-size: 4rem;
-  color: var(--primary-light);
-  margin-bottom: 20px;
-  opacity: 0.7;
-}
-
-.empty-state h3 {
-  color: var(--text-main);
-  margin-bottom: 15px;
-  font-size: 1.5rem;
-}
-
-.empty-state p {
-  max-width: 500px;
-  margin: 0 auto 30px auto;
-  line-height: 1.6;
-}
-
-.empty-features {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.feature {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 20px;
-  background: var(--background);
-  border-radius: var(--border-radius);
-  transition: all 0.3s ease;
-}
-
-.feature:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.feature i {
-  font-size: 1.5rem;
-  color: var(--primary);
-}
-
-.feature span {
-  font-weight: 500;
-  color: var(--text-main);
-  font-size: 0.9rem;
-}
-
-/* ===== TIPS ===== */
-.tips-section {
-  background: var(--light);
-  padding: 30px 40px;
-  border-top: 1px solid #e9ecef;
-}
-
-.tips-section h4 {
-  margin: 0 0 20px 0;
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.2rem;
-}
-
-.tips-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.tip-card {
-  background: var(--white);
-  padding: 25px;
-  border-radius: var(--border-radius);
-  border: 1px solid #e9ecef;
-  transition: all 0.3s ease;
-}
-
-.tip-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-}
-
-.tip-card i {
-  font-size: 1.5rem;
-  color: var(--primary);
-  margin-bottom: 15px;
-}
-
-.tip-card h5 {
-  margin: 0 0 10px 0;
-  color: var(--text-main);
-  font-size: 1.1rem;
-}
-
-.tip-card p {
-  margin: 0;
-  color: var(--text-light);
-  font-size: 0.9rem;
-  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 968px) {
-  .pricing-main {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .empty-features {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 768px) {
-  .pricing-header {
-    flex-direction: column;
-    text-align: center;
-    padding: 25px 20px;
+  .ai-chat-container {
+    margin: 10px;
+    border-radius: var(--border-radius);
   }
   
-  .header-icon {
-    width: 70px;
-    height: 70px;
-    font-size: 1.8rem;
+  .chat-header {
+    padding: 15px 20px;
   }
   
-  .pricing-main {
-    padding: 20px;
+  .chat-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
   }
   
-  .metrics-grid {
+  .chat-title {
+    font-size: 1.3rem;
+  }
+  
+  .chat-main {
+    height: 600px;
+  }
+  
+  .message {
+    max-width: 95%;
+  }
+  
+  .form-row {
     grid-template-columns: 1fr;
   }
   
-  .result-actions {
-    flex-direction: column;
-  }
-  
-  .tips-section {
-    padding: 25px 20px;
-  }
-  
-  .tips-grid {
-    grid-template-columns: 1fr;
+  .welcome-features {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-  .pricing-title {
-    font-size: 1.6rem;
+  .chat-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
   }
   
-  .pricing-features {
-    justify-content: center;
+  .chat-actions {
+    margin-top: 10px;
   }
   
-  .form-section,
-  .result-section {
-    padding: 20px 15px;
+  .message {
+    max-width: 100%;
+  }
+  
+  .message-content {
+    padding: 10px 12px;
+  }
+  
+  .welcome-features {
+    grid-template-columns: 1fr;
   }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const form = document.querySelector('.ai-form');
-  const submitBtn = document.querySelector('.btn-submit');
+  const chatBox = document.getElementById('chatBox');
   
-  // Animación de loading al enviar
-  if (form && submitBtn) {
-    form.addEventListener('submit', function() {
-      submitBtn.classList.add('loading');
-      submitBtn.disabled = true;
-    });
+  // Auto-scroll al final del chat
+  if (chatBox) {
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
   
-  // Efectos hover en métricas (pueden ser dinámicas)
-  const metricCards = document.querySelectorAll('.metric-card');
-  metricCards.forEach(card => {
-    card.addEventListener('mouseenter', function() {
-      this.style.transform = 'translateY(-3px)';
+  // Efecto de carga en el botón de enviar
+  const form = document.querySelector('.chat-form');
+  const submitBtn = form.querySelector('.btn-send');
+  
+  if (form && submitBtn) {
+    form.addEventListener('submit', function() {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
     });
-    
-    card.addEventListener('mouseleave', function() {
-      this.style.transform = 'translateY(0)';
-    });
-  });
+  }
 });
-
-// Función para copiar resultado
-function copyToClipboard() {
-  const resultText = document.querySelector('.result-content pre').textContent;
-  navigator.clipboard.writeText(resultText).then(() => {
-    // Mostrar feedback de copiado
-    const btn = document.querySelector('.btn-copy');
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-check"></i>';
-    btn.style.background = 'var(--success)';
-    btn.style.color = 'var(--white)';
-    
-    setTimeout(() => {
-      btn.innerHTML = originalHTML;
-      btn.style.background = '';
-      btn.style.color = '';
-    }, 2000);
-  });
-}
-
-// Aquí podrías agregar funciones para extraer métricas del análisis de IA
-function extractMetricsFromResult(resultText) {
-  // Esta función analizaría el texto de resultado y extraería
-  // precio sugerido, margen, etc. para llenar las métricas
-  // Por ahora es un placeholder
-}
 </script>
 
 {% endblock %}

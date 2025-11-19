@@ -16,6 +16,8 @@ def configure_client():
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("❌ La variable GEMINI_API_KEY no está definida en el archivo .env")
+    
+    # Configuración segura del cliente sin dejar expuesta la key
     genai.configure(api_key=api_key)
 
 # ---------------- Modelo fijo ----------------
@@ -43,11 +45,11 @@ def generate_text(prompt, max_output_tokens=500):
         response = model.generate_content(prompt, generation_config=config)
         logger.debug(f"Respuesta cruda de Gemini: {response}")
 
-        # Intentar obtener texto directamente
+        # Intentar obtener texto directo
         if hasattr(response, "text") and response.text:
             return response.text.strip()
 
-        # Si no hay texto directo, buscar en los candidatos
+        # Buscar en candidates si no vino directo
         if hasattr(response, "candidates") and response.candidates:
             for candidate in response.candidates:
                 if hasattr(candidate, "content") and candidate.content.parts:
@@ -69,8 +71,10 @@ def embed_text(text, model="text-embedding-004"):
     try:
         configure_client()
         response = genai.embed_content(model=model, content=text)
+        
         if hasattr(response, 'embedding'):
             return response.embedding
+        
         return response
     except Exception as e:
         logger.warning(f"Error al generar embedding: {e}")

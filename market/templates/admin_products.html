@@ -127,13 +127,13 @@
                 <div class="btn-group btn-group-sm">
                   <a href="{% url 'market:product-edit' product.id %}" class="btn btn-outline-primary" 
                      title="Editar como administrador">
-                    <i class="bi bi-pencil"></i>
+                    <i class="bi bi-pencil">✏️</i>
                   </a>
                   <button class="btn btn-outline-danger js-open-delete-modal"
                           data-delete-url="{% url 'market:product-delete' product.id %}"
                           data-product-title="{{ product.title|escapejs }}"
                           title="Eliminar como administrador">
-                    <i class="bi bi-trash"></i>
+                    <i class="bi bi-trash">🗑️</i>
                   </button>
                   {% if not product.active %}
                   <form method="post" action="{% url 'market:product-toggle-status' product.id %}" class="d-inline">

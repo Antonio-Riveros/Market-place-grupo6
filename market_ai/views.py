@@ -6,7 +6,7 @@ from .forms import PriceSuggestForm, ChatForm
 from .gemini_client import generate_text, embed_text
 from market.models import Product
 from .models import ProductEmbedding
-import math
+import numpy as np
 
 def price_suggest(request):
     sugerencia = None
@@ -141,45 +141,112 @@ def ai_chat(request):
         if form.is_valid():
             user_msg = form.cleaned_data["message"]
 
-            # Construimos prompt con últimos 4 turnos
-            system = "Sos un asistente amablemente orientado a ayudar en un marketplace (publicar, comprar, trueque). Responde en español."
-            accumulated = system + "\n\n"
-            for turn in history[-4:]:
-                accumulated += f"Usuario: {turn['user']}\nAsistente: {turn['ai']}\n"
-            accumulated += f"Usuario: {user_msg}\nAsistente: "
+            # PROMPT MEJORADO con personalidad definida y contexto marketplace
+            system_prompt = """
+            Eres "Matioli", un asistente virtual especializado en el marketplace argentino. 
 
-            ai_resp = generate_text(accumulated)
+            TU PERSONALIDAD:
+            - Amable y cercano, como un amigo que sabe de compras
+            - Usa modismos argentinos ocasionales (che, dale, etc.)
+            - Práctico y orientado a soluciones
+            - Conocedor de precios y tendencias locales
 
-            # Guardamos en sesión
+            ÁREAS DE ESPECIALIDAD:
+            🛒 Cómo publicar productos efectivamente
+            💰 Estrategias de precios y promociones
+            📦 Logística y envíos en Argentina
+            🎯 Cómo atraer más compradores
+            🔍 Encontrar productos específicos
+
+            Si no sabés algo, se honesto y ofrecé ayudar de otra forma.
+            Mantené las respuestas útiles y centradas en el marketplace.
+            """
+
+            # Construir contexto de conversación
+            conversation_context = system_prompt + "\n\nCONTEXTO DE CONVERSACIÓN:\n"
+            
+            # Incluir últimos 6 mensajes para mejor contexto
+            for turn in history[-6:]:
+                conversation_context += f"Usuario: {turn['user']}\nMateBot: {turn['ai']}\n"
+            
+            conversation_context += f"Usuario: {user_msg}\nMateBot: "
+
+            ai_resp = generate_text(conversation_context, max_output_tokens=250)
+
+            # Guardar en sesión (limitar a 12 mensajes máximo)
             history.append({"user": user_msg, "ai": ai_resp})
+            if len(history) > 12:
+                history = history[-12:]
+            
             request.session["ai_chat_history"] = history
             request.session.modified = True
+            
+            # Resetear el formulario para nuevo mensaje
+            form = ChatForm()
     else:
         form = ChatForm()
 
     return render(request, "ai_chat.html", {"form": form, "history": history})
 
 def recommend_similar(request, pk):
-    # recomienda productos similares por embeddings
+    """Sistema de recomendaciones mejorado con análisis semántico"""
     producto = get_object_or_404(Product, pk=pk, active=True)
+    
     try:
-        # intentamos usar embeddings guardados
+        # Intentar usar embeddings guardados
         target = producto.embedding.vector
     except Exception:
-        # si no hay embedding guardado, generamos en vuelo
-        text = f"{producto.title}. {producto.description or ''}"
+        # Si no hay embedding, generarlo en tiempo real
+        text = f"{producto.title}. {producto.description or ''}. Categoría: {producto.category}"
         target = embed_text(text)
+        
+        # Guardar el embedding para futuras recomendaciones
+        if target:
+            ProductEmbedding.objects.get_or_create(
+                product=producto,
+                defaults={'vector': target}
+            )
 
-    # calculo de similitud simple con todos los product embeddings
-    candidates = ProductEmbedding.objects.exclude(product=producto)
+    # Búsqueda de productos similares con filtros mejorados
+    candidates = ProductEmbedding.objects.exclude(product=producto).select_related('product')
+    
+    # Filtrar solo productos activos y disponibles
+    candidates = [c for c in candidates if c.product.active and c.product.stock > 0]
+    
+    if not candidates:
+        # Fallback: búsqueda por categoría y palabras clave
+        similar_products = Product.objects.filter(
+            Q(category=producto.category) | 
+            Q(title__icontains=producto.title.split()[0]) if producto.title else Q(),
+            active=True,
+            stock__gt=0
+        ).exclude(id=producto.id)[:6]
+        
+        return render(request, "market_ai/recommendations.html", {
+            "product": producto, 
+            "recommended": similar_products,
+            "method": "búsqueda por categoría"
+        })
+
+    # Cálculo de similitud con numpy optimizado
     results = []
-    import numpy as np
     tvec = np.array(target, dtype=float)
-    for c in candidates:
-        vec = np.array(c.vector, dtype=float)
-        # coseno
-        cos = float(np.dot(tvec, vec) / (np.linalg.norm(tvec) * np.linalg.norm(vec)))
-        results.append((c.product, cos))
+    
+    for candidate in candidates:
+        cvec = np.array(candidate.vector, dtype=float)
+        
+        # Similitud coseno con manejo de errores
+        try:
+            norm_t = np.linalg.norm(tvec)
+            norm_c = np.linalg.norm(cvec)
+            
+            if norm_t > 0 and norm_c > 0:
+                cosine_sim = np.dot(tvec, cvec) / (norm_t * norm_c)
+                results.append((candidate.product, float(cosine_sim)))
+        except Exception:
+            continue
+
+    # Ordenar y tomar los mejores
     results.sort(key=lambda x: x[1], reverse=True)
     top = [p for p,score in results[:6]]
     return render(request, "market_ai/recommendations.html", {"product": producto, "recommended": top})
